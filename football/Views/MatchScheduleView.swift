@@ -2,7 +2,9 @@ import SwiftUI
 
 struct MatchScheduleView: View {
     @State var viewModel: MatchScheduleViewModel
-    @State private var showingAbout = false
+    // "-ShowAbout" is passed by screenshot automation to open the sheet
+    // without UI interaction; never set in normal use.
+    @State private var showingAbout = ProcessInfo.processInfo.arguments.contains("-ShowAbout")
 
     var body: some View {
         NavigationStack {
