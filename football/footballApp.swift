@@ -1,17 +1,14 @@
-//
-//  footballApp.swift
-//  football
-//
-//  Created by Zé Neto on 12/06/26.
-//
-
 import SwiftUI
 
 @main
 struct footballApp: App {
+    private let dependencies = AppDependencies.live()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MatchScheduleView(
+                viewModel: MatchScheduleViewModel(service: dependencies.service)
+            )
         }
     }
 }

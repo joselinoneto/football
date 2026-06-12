@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		82CC9D012FDC900000B32264 /* FootballCore in Frameworks */ = {isa = PBXBuildFile; productRef = 82CC9D002FDC900000B32264 /* FootballCore */; };
+		82CC9D032FDC900000B32264 /* FootballAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 82CC9D022FDC900000B32264 /* FootballAPI */; };
+		82CC9D052FDC900000B32264 /* FootballStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 82CC9D042FDC900000B32264 /* FootballStorage */; };
+		82CC9D072FDC900000B32264 /* FootballManager in Frameworks */ = {isa = PBXBuildFile; productRef = 82CC9D062FDC900000B32264 /* FootballManager */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		82CC9CCB2FDC88AE00B32264 /* football.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = football.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +30,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82CC9D012FDC900000B32264 /* FootballCore in Frameworks */,
+				82CC9D032FDC900000B32264 /* FootballAPI in Frameworks */,
+				82CC9D052FDC900000B32264 /* FootballStorage in Frameworks */,
+				82CC9D072FDC900000B32264 /* FootballManager in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +76,10 @@
 			);
 			name = football;
 			packageProductDependencies = (
+				82CC9D002FDC900000B32264 /* FootballCore */,
+				82CC9D022FDC900000B32264 /* FootballAPI */,
+				82CC9D042FDC900000B32264 /* FootballStorage */,
+				82CC9D062FDC900000B32264 /* FootballManager */,
 			);
 			productName = football;
 			productReference = 82CC9CCB2FDC88AE00B32264 /* football.app */;
@@ -91,9 +106,16 @@
 			knownRegions = (
 				en,
 				Base,
+				"pt-BR",
 			);
 			mainGroup = 82CC9CC22FDC88AE00B32264;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				82CC9D082FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballCore" */,
+				82CC9D092FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballAPI" */,
+				82CC9D0A2FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballStorage" */,
+				82CC9D0B2FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballManager" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 82CC9CCC2FDC88AE00B32264 /* Products */;
 			projectDirPath = "";
@@ -254,6 +276,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -274,13 +297,14 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 26.4;
 			};
 			name = Debug;
@@ -298,6 +322,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -318,13 +343,14 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 26.4;
 			};
 			name = Release;
@@ -351,6 +377,44 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		82CC9D082FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FootballCore;
+		};
+		82CC9D092FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballAPI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FootballAPI;
+		};
+		82CC9D0A2FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballStorage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FootballStorage;
+		};
+		82CC9D0B2FDC900000B32264 /* XCLocalSwiftPackageReference "Packages/FootballManager" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FootballManager;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		82CC9D002FDC900000B32264 /* FootballCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballCore;
+		};
+		82CC9D022FDC900000B32264 /* FootballAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballAPI;
+		};
+		82CC9D042FDC900000B32264 /* FootballStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballStorage;
+		};
+		82CC9D062FDC900000B32264 /* FootballManager */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballManager;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 82CC9CC32FDC88AE00B32264 /* Project object */;
 }
