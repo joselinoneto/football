@@ -10,6 +10,7 @@ struct MatchScheduleView: View {
     var body: some View {
         NavigationStack {
             content
+                .background(AppBackground())
                 .navigationTitle("World Cup 2026")
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
@@ -54,7 +55,7 @@ struct MatchScheduleView: View {
 
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: Design.Spacing.medium) {
                 ForEach(MatchFilter.allCases) { filter in
                     FilterChip(
                         title: filter.title,
@@ -67,7 +68,7 @@ struct MatchScheduleView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
+            .padding(.vertical, Design.Spacing.medium)
         }
     }
 
@@ -81,22 +82,52 @@ struct MatchScheduleView: View {
             )
             .frame(maxHeight: .infinity)
         } else {
-            List {
-                ForEach(viewModel.filteredDays) { day in
-                    Section(day.title) {
-                        ForEach(day.rows) { row in
-                            MatchRowView(row: row)
-                                .listRowBackground(
-                                    row.status == .live ? Color.red.opacity(0.1) : nil
-                                )
-                        }
+            matchListContent
+        }
+    }
+
+    private var matchListContent: some View {
+        List {
+            ForEach(viewModel.filteredDays) { day in
+                Section {
+                    ForEach(day.rows) { row in
+                        MatchRowView(row: row)
+                            .listRowBackground(rowBackground(for: row))
                     }
+                } header: {
+                    DayHeader(day: day)
                 }
             }
-            .refreshable {
-                await viewModel.refresh()
-            }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .refreshable {
+            await viewModel.refresh()
+        }
+    }
+
+    private func rowBackground(for row: MatchRowModel) -> some View {
+        (row.status == .live ? Color.live.opacity(Design.Opacity.liveRowTint) : Color(uiColor: .secondarySystemGroupedBackground))
+    }
+}
+
+private struct DayHeader: View {
+    let day: MatchDay
+
+    var body: some View {
+        HStack(spacing: Design.Spacing.medium) {
+            if day.isToday {
+                Circle()
+                    .fill(Color.pitch)
+                    .frame(width: Design.Size.todayDot, height: Design.Size.todayDot)
+            }
+            Text(day.title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(day.isToday ? Color.pitch : .secondary)
+            Spacer()
+        }
+        .textCase(nil)
+        .padding(.bottom, Design.Spacing.xxSmall)
     }
 }
 
@@ -108,16 +139,22 @@ private struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.subheadline.weight(.medium))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .background(
-                    isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(.quinary),
-                    in: Capsule()
-                )
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, Design.Spacing.xxxLarge)
+                .padding(.vertical, Design.Spacing.medium)
                 .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .background {
+                    Capsule()
+                        .fill(isSelected ? AnyShapeStyle(Color.pitch) : AnyShapeStyle(.thinMaterial))
+                }
+                .overlay {
+                    if !isSelected {
+                        Capsule().strokeBorder(Color.primary.opacity(Design.Opacity.chipBorder))
+                    }
+                }
         }
         .buttonStyle(.plain)
+        .animation(.snappy, value: isSelected)
     }
 }
 

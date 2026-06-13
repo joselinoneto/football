@@ -6,14 +6,19 @@ struct AboutView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 28) {
-                    Image(systemName: "soccerball.inverse")
-                        .font(.system(size: 110))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(.tint)
-                        .padding(.top, 24)
+                VStack(spacing: Design.Spacing.sectionLarge) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.pitch.opacity(Design.Opacity.iconHalo))
+                            .frame(width: Design.Size.aboutHalo, height: Design.Size.aboutHalo)
+                        Image(systemName: "soccerball.inverse")
+                            .font(.system(size: Design.Size.aboutGlyph))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(Color.pitch)
+                    }
+                    .padding(.top, Design.Spacing.section)
 
-                    VStack(spacing: 8) {
+                    VStack(spacing: Design.Spacing.medium) {
                         Text(verbatim: "World Cup 2026")
                             .font(.largeTitle.bold())
                         Text("about.tagline")
@@ -27,27 +32,29 @@ struct AboutView: View {
                         .foregroundStyle(.secondary)
                         .padding(.horizontal)
 
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: Design.Spacing.xxLarge) {
                         deniedRow("No ads")
                         deniedRow("No authentication")
                         deniedRow("No tracking")
                         deniedRow("No pink football boots")
                         deniedRow("No soccer")
-                        HStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
+                        Divider()
+                            .padding(.vertical, Design.Spacing.xxSmall)
+                        HStack(spacing: Design.Spacing.xLarge) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundStyle(Color.pitch)
                             Text("Just football.")
                                 .fontWeight(.semibold)
                         }
                     }
                     .font(.body)
-                    .padding(24)
+                    .padding(Design.Spacing.section)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.quinary, in: RoundedRectangle(cornerRadius: 16))
+                    .background(.quinary, in: RoundedRectangle(cornerRadius: Design.Radius.card))
                     .padding(.horizontal)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.bottom, 32)
+                .padding(.bottom, Design.Spacing.screenBottom)
             }
             .navigationTitle("About")
             .toolbarTitleDisplayMode(.inline)
@@ -62,7 +69,7 @@ struct AboutView: View {
     }
 
     private func deniedRow(_ text: LocalizedStringKey) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Design.Spacing.xLarge) {
             Image(systemName: "xmark.circle.fill")
                 .foregroundStyle(.red)
             Text(text)
