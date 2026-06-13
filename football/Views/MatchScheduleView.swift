@@ -1,4 +1,5 @@
 import SwiftUI
+import FootballCore
 
 struct MatchScheduleView: View {
     @State var viewModel: MatchScheduleViewModel
@@ -44,11 +45,50 @@ struct MatchScheduleView: View {
                 .buttonStyle(.borderedProminent)
             }
         case .loaded:
+            VStack(spacing: 0) {
+                filterBar
+                matchList
+            }
+        }
+    }
+
+    private var filterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(MatchFilter.allCases) { filter in
+                    FilterChip(
+                        title: filter.title,
+                        isSelected: viewModel.selectedFilter == filter
+                    ) {
+                        withAnimation(.snappy) {
+                            viewModel.selectedFilter = filter
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+        }
+    }
+
+    @ViewBuilder
+    private var matchList: some View {
+        if viewModel.filteredDays.isEmpty {
+            ContentUnavailableView(
+                "No Matches",
+                systemImage: "soccerball",
+                description: Text("There are no matches for this filter.")
+            )
+            .frame(maxHeight: .infinity)
+        } else {
             List {
-                ForEach(viewModel.days) { day in
+                ForEach(viewModel.filteredDays) { day in
                     Section(day.title) {
                         ForEach(day.rows) { row in
                             MatchRowView(row: row)
+                                .listRowBackground(
+                                    row.status == .live ? Color.red.opacity(0.1) : nil
+                                )
                         }
                     }
                 }
@@ -57,6 +97,27 @@ struct MatchScheduleView: View {
                 await viewModel.refresh()
             }
         }
+    }
+}
+
+private struct FilterChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(
+                    isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(.quinary),
+                    in: Capsule()
+                )
+                .foregroundStyle(isSelected ? Color.white : Color.primary)
+        }
+        .buttonStyle(.plain)
     }
 }
 

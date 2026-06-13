@@ -14,6 +14,22 @@ final class MatchScheduleViewModel {
 
     private(set) var phase: Phase = .loading
     private(set) var days: [MatchDay] = []
+    var selectedFilter: MatchFilter = .all
+
+    /// The grouped days narrowed down to the active filter, dropping any day
+    /// left without matching matches.
+    var filteredDays: [MatchDay] {
+        switch selectedFilter {
+        case .all:
+            return days
+        case .today:
+            return days.filter(\.isToday)
+        case .upcoming:
+            return days.compactMap { $0.keepingRows { $0.status != .finished } }
+        case .finished:
+            return days.compactMap { $0.keepingRows { $0.status == .finished } }
+        }
+    }
 
     private let service: any FootballService
 
@@ -70,23 +86,60 @@ final class MatchScheduleViewModel {
 
     private static func groupedByDay(_ rows: [MatchRowModel]) -> [MatchDay] {
         let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
         let grouped = Dictionary(grouping: rows) { calendar.startOfDay(for: $0.kickoff) }
         return grouped
-            .sorted { $0.key < $1.key }
             .map { date, rows in
-                MatchDay(date: date, rows: rows.sorted { $0.kickoff < $1.kickoff })
+                MatchDay(
+                    date: date,
+                    isToday: date == today,
+                    rows: rows.sorted { $0.kickoff < $1.kickoff }
+                )
             }
+            // Today's matches pinned to the top, every other day in date order.
+            .sorted { lhs, rhs in
+                if lhs.isToday != rhs.isToday { return lhs.isToday }
+                return lhs.date < rhs.date
+            }
+    }
+}
+
+enum MatchFilter: String, CaseIterable, Identifiable {
+    case all
+    case today
+    case upcoming
+    case finished
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .all: String(localized: "All")
+        case .today: String(localized: "Today")
+        case .upcoming: String(localized: "Upcoming")
+        case .finished: String(localized: "Finished")
+        }
     }
 }
 
 struct MatchDay: Identifiable {
     let date: Date
+    let isToday: Bool
     let rows: [MatchRowModel]
 
     var id: Date { date }
 
     var title: String {
-        date.formatted(.dateTime.weekday(.wide).day().month(.wide))
+        if isToday {
+            return String(localized: "Today")
+        }
+        return date.formatted(.dateTime.weekday(.wide).day().month(.wide))
+    }
+
+    /// Returns a copy keeping only matching rows, or nil if none remain.
+    func keepingRows(_ isIncluded: (MatchRowModel) -> Bool) -> MatchDay? {
+        let kept = rows.filter(isIncluded)
+        return kept.isEmpty ? nil : MatchDay(date: date, isToday: isToday, rows: kept)
     }
 }
 

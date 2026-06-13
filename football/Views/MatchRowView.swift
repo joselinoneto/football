@@ -23,12 +23,7 @@ struct MatchRowView: View {
     private var trailingDetail: some View {
         switch row.status {
         case .live:
-            Text("LIVE")
-                .font(.caption.bold())
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.red, in: Capsule())
-                .foregroundStyle(.white)
+            LiveBadge()
         case .scheduled:
             Text(row.kickoff, style: .time)
                 .font(.caption.monospacedDigit())
@@ -37,6 +32,30 @@ struct MatchRowView: View {
             Text("FT")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private struct LiveBadge: View {
+        @State private var pulsing = false
+
+        var body: some View {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(.white)
+                    .frame(width: 6, height: 6)
+                    .opacity(pulsing ? 0.3 : 1)
+                Text("LIVE")
+            }
+            .font(.caption.bold())
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(.red, in: Capsule())
+            .foregroundStyle(.white)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                    pulsing = true
+                }
+            }
         }
     }
 
