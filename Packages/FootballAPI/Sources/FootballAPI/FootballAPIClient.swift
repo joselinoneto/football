@@ -4,6 +4,7 @@ import FootballCore
 public protocol FootballAPIClient: Sendable {
     func fetchTeams(locale: ContentLocale) async throws -> [Team]
     func fetchMatches(locale: ContentLocale) async throws -> [Match]
+    func fetchGoals() async throws -> [Goal]
 }
 
 public struct AirtableFootballClient: FootballAPIClient {
@@ -28,5 +29,13 @@ public struct AirtableFootballClient: FootballAPIClient {
         )
         return records.compactMap { Match(record: $0, locale: locale) }
             .sorted { $0.number < $1.number }
+    }
+
+    public func fetchGoals() async throws -> [Goal] {
+        let records: [AirtableRecord<GoalFields>] = try await transport.allRecords(
+            table: "Goals",
+            fields: GoalFields.requestedFields()
+        )
+        return records.compactMap { Goal(record: $0) }
     }
 }

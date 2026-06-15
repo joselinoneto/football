@@ -14,7 +14,9 @@ No ads. No accounts. No tracking. Just football.
 
 - Every match, grouped by day and sorted by kickoff
 - Kickoff times shown in your time zone
-- Live matches flagged the moment they start, final scores as soon as the whistle blows
+- Live matches flagged the moment they start, with the running match clock, and final scores as soon as the whistle blows
+- Live scores and goals refresh on their own while a match is in play — no need to pull
+- Tap any match for its goal-by-goal timeline: scorer, minute, and penalty/own-goal markers
 - Every stage clearly labelled, from the group phase to the final, with venues
 - Works offline — the schedule lives on your device and refreshes when you open the app
 - Localized in English and Brazilian Portuguese
@@ -30,7 +32,7 @@ A SwiftUI + MVVM app, with all logic split into four local Swift packages under 
 ```
 football/            App target — Views, ViewModels, Support
 Packages/
-├── FootballCore     Domain models (Team, Match, Stage, ContentLocale)
+├── FootballCore     Domain models (Team, Match, Goal, Stage, ContentLocale)
 ├── FootballAPI      Airtable REST client
 ├── FootballStorage  SwiftData local cache (FootballStore model actor)
 └── FootballManager  Sync & service layer tying API and storage together
@@ -45,7 +47,7 @@ UI strings are localized with String Catalogs (en, pt-BR); match and team names 
 Requires Xcode with the iOS 26 SDK.
 
 1. Clone the repo and open `football.xcodeproj`.
-2. The app reads its data from an Airtable base with two tables, `Teams` and `Matches`. Credentials are kept out of git:
+2. The app reads its data from an Airtable base with three tables, `Teams`, `Matches`, and `Goals`. Credentials are kept out of git:
 
    ```sh
    cp football/Support/Secrets.swift.sample football/Support/Secrets.swift

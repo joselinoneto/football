@@ -40,6 +40,7 @@ struct MatchFields: Decodable, Sendable {
     let homeScore: Int?
     let awayScore: Int?
     let status: String?
+    let minute: String?
 
     enum CodingKeys: String, CodingKey {
         case title = "Match"
@@ -53,17 +54,42 @@ struct MatchFields: Decodable, Sendable {
         case homeScore = "Home Score"
         case awayScore = "Away Score"
         case status = "Status"
+        case minute = "Minute"
     }
 
     static func requestedFields(for locale: ContentLocale) -> [String] {
         var fields = [
             "Match", "Match No", "Home Team", "Away Team", "Kickoff",
-            "Stage", "Venue", "Home Score", "Away Score", "Status"
+            "Stage", "Venue", "Home Score", "Away Score", "Status", "Minute"
         ]
         if locale == .brazilianPortuguese {
             fields.append("Match pt-BR")
         }
         return fields
+    }
+}
+
+struct GoalFields: Decodable, Sendable {
+    let matchNumber: Int?
+    let match: [String]?
+    let team: [String]?
+    let scorer: String?
+    let minute: String?
+    let type: String?
+
+    enum CodingKeys: String, CodingKey {
+        case matchNumber = "Match No"
+        case match = "Match"
+        case team = "Team"
+        case scorer = "Scorer"
+        case minute = "Minute"
+        case type = "Type"
+    }
+
+    // Scorer is a proper noun and the type is localized client-side, so no
+    // locale-specific columns are needed — the same set serves every locale.
+    static func requestedFields() -> [String] {
+        ["Match No", "Match", "Team", "Scorer", "Minute", "Type"]
     }
 }
 
@@ -105,7 +131,27 @@ extension Match {
             venue: fields.venue ?? "",
             homeScore: fields.homeScore,
             awayScore: fields.awayScore,
-            status: fields.status.flatMap(MatchStatus.init(rawValue:)) ?? .scheduled
+            status: fields.status.flatMap(MatchStatus.init(rawValue:)) ?? .scheduled,
+            minute: fields.minute
+        )
+    }
+}
+
+extension Goal {
+    init?(record: AirtableRecord<GoalFields>) {
+        let fields = record.fields
+        // A goal needs a match, a scorer, and a minute to be meaningful.
+        guard let number = fields.matchNumber,
+              let scorer = fields.scorer, !scorer.isEmpty,
+              let minute = fields.minute else { return nil }
+        self.init(
+            id: record.id,
+            matchNumber: number,
+            matchID: fields.match?.first,
+            teamID: fields.team?.first,
+            scorer: scorer,
+            minute: minute,
+            type: fields.type.flatMap(GoalType.init(rawValue:)) ?? .goal
         )
     }
 }

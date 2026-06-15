@@ -91,8 +91,12 @@ struct MatchScheduleView: View {
             ForEach(viewModel.filteredDays) { day in
                 Section {
                     ForEach(day.rows) { row in
-                        MatchRowView(row: row)
-                            .listRowBackground(rowBackground(for: row))
+                        NavigationLink {
+                            MatchDetailView(viewModel: viewModel, matchID: row.id)
+                        } label: {
+                            MatchRowView(row: row)
+                        }
+                        .listRowBackground(rowBackground(for: row))
                     }
                 } header: {
                     DayHeader(day: day)

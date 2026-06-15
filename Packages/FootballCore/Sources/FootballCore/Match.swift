@@ -36,6 +36,9 @@ public struct Match: Identifiable, Hashable, Sendable {
     public let homeScore: Int?
     public let awayScore: Int?
     public let status: MatchStatus
+    /// Live match clock as supplied by the feed, e.g. "67'" or "90+2'".
+    /// Present only while `status == .live`; nil otherwise.
+    public let minute: String?
 
     public init(
         id: String,
@@ -48,7 +51,8 @@ public struct Match: Identifiable, Hashable, Sendable {
         venue: String,
         homeScore: Int?,
         awayScore: Int?,
-        status: MatchStatus
+        status: MatchStatus,
+        minute: String? = nil
     ) {
         self.id = id
         self.number = number
@@ -61,6 +65,7 @@ public struct Match: Identifiable, Hashable, Sendable {
         self.homeScore = homeScore
         self.awayScore = awayScore
         self.status = status
+        self.minute = minute
     }
 
     /// Home/away names parsed from the title, used as a fallback when the

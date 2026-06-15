@@ -15,6 +15,7 @@ public final class StoredMatch {
     public var homeScore: Int?
     public var awayScore: Int?
     public var statusRaw: String
+    public var minute: String?
 
     public init(
         remoteID: String,
@@ -27,7 +28,8 @@ public final class StoredMatch {
         venue: String,
         homeScore: Int?,
         awayScore: Int?,
-        statusRaw: String
+        statusRaw: String,
+        minute: String? = nil
     ) {
         self.remoteID = remoteID
         self.number = number
@@ -40,6 +42,7 @@ public final class StoredMatch {
         self.homeScore = homeScore
         self.awayScore = awayScore
         self.statusRaw = statusRaw
+        self.minute = minute
     }
 }
 
@@ -56,7 +59,8 @@ extension StoredMatch {
             venue: match.venue,
             homeScore: match.homeScore,
             awayScore: match.awayScore,
-            statusRaw: match.status.rawValue
+            statusRaw: match.status.rawValue,
+            minute: match.minute
         )
     }
 
@@ -71,6 +75,7 @@ extension StoredMatch {
         homeScore = match.homeScore
         awayScore = match.awayScore
         statusRaw = match.status.rawValue
+        minute = match.minute
     }
 
     var match: Match {
@@ -85,7 +90,8 @@ extension StoredMatch {
             venue: venue,
             homeScore: homeScore,
             awayScore: awayScore,
-            status: MatchStatus(rawValue: statusRaw) ?? .scheduled
+            status: MatchStatus(rawValue: statusRaw) ?? .scheduled,
+            minute: minute
         )
     }
 }

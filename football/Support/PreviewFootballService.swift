@@ -30,7 +30,7 @@ final class PreviewFootballService: FootballService {
                 homeTeamID: "recBRA", awayTeamID: "recMAR",
                 kickoff: now.addingTimeInterval(-1800),
                 stage: .group, venue: "MetLife Stadium, New York",
-                homeScore: 1, awayScore: 1, status: .live
+                homeScore: 2, awayScore: 1, status: .live, minute: "67'"
             ),
             Match(
                 id: "recM3", number: 104, title: "Winner Match 102 vs Winner Match 103",
@@ -39,6 +39,23 @@ final class PreviewFootballService: FootballService {
                 stage: .final, venue: "MetLife Stadium, New York",
                 homeScore: nil, awayScore: nil, status: .scheduled
             )
+        ]
+    }
+
+    func goals() async throws -> [Goal] {
+        [
+            Goal(id: "recG1", matchNumber: 1, matchID: "recM1", teamID: "recMEX",
+                 scorer: "H. Lozano", minute: "12'", type: .goal),
+            Goal(id: "recG2", matchNumber: 1, matchID: "recM1", teamID: "recRSA",
+                 scorer: "P. Tau", minute: "34'", type: .penalty),
+            Goal(id: "recG3", matchNumber: 1, matchID: "recM1", teamID: "recMEX",
+                 scorer: "S. Giménez", minute: "78'", type: .goal),
+            Goal(id: "recG4", matchNumber: 2, matchID: "recM2", teamID: "recBRA",
+                 scorer: "Vinícius Jr.", minute: "23'", type: .goal),
+            Goal(id: "recG5", matchNumber: 2, matchID: "recM2", teamID: "recMAR",
+                 scorer: "Y. En-Nesyri", minute: "41'", type: .penalty),
+            Goal(id: "recG6", matchNumber: 2, matchID: "recM2", teamID: "recBRA",
+                 scorer: "Rodrygo", minute: "67'", type: .goal)
         ]
     }
 }

@@ -42,7 +42,14 @@ struct MatchRowView: View {
     private var trailingDetail: some View {
         switch row.status {
         case .live:
-            LiveBadge()
+            HStack(spacing: Design.Spacing.small) {
+                if let minute = row.minute, !minute.isEmpty {
+                    Text(minute)
+                        .font(.caption.weight(.bold).monospacedDigit())
+                        .foregroundStyle(Color.live)
+                }
+                LiveBadge()
+            }
         case .scheduled:
             Text(row.kickoff, style: .time)
                 .font(.caption.weight(.medium).monospacedDigit())

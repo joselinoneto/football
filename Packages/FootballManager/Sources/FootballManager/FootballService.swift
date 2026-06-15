@@ -6,4 +6,5 @@ public protocol FootballService: Sendable {
     func refresh() async throws
     func teams() async throws -> [Team]
     func matches() async throws -> [Match]
+    func goals() async throws -> [Goal]
 }

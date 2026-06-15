@@ -92,6 +92,107 @@ import FootballCore
         #expect(team.flag == "🇪🇸")
     }
 
+    @Test func decodesLiveMatchMinute() throws {
+        let json = """
+        {
+            "records": [
+                {
+                    "id": "recLive",
+                    "createdTime": "2026-06-12T18:25:00.000Z",
+                    "fields": {
+                        "Stage": "Group",
+                        "Match No": 2,
+                        "Kickoff": "2026-06-13T19:00:00.000Z",
+                        "Status": "Live",
+                        "Match": "Brazil vs Morocco",
+                        "Home Score": 2,
+                        "Away Score": 1,
+                        "Minute": "67'"
+                    }
+                }
+            ]
+        }
+        """
+        let page = try AirtableTransport.decoder.decode(
+            AirtablePage<MatchFields>.self,
+            from: Data(json.utf8)
+        )
+        let match = try #require(page.records.compactMap { Match(record: $0, locale: .english) }.first)
+        #expect(match.status == .live)
+        #expect(match.minute == "67'")
+        #expect(match.homeScore == 2)
+    }
+
+    @Test func decodesGoalPage() throws {
+        let json = """
+        {
+            "records": [
+                {
+                    "id": "recG1",
+                    "createdTime": "2026-06-13T19:23:00.000Z",
+                    "fields": {
+                        "Goal ID": "M2-23'-Vinícius Jr.",
+                        "Match No": 2,
+                        "Match": ["recM2"],
+                        "Team": ["recBRA"],
+                        "Scorer": "Vinícius Jr.",
+                        "Minute": "23'",
+                        "Type": "Goal"
+                    }
+                },
+                {
+                    "id": "recG2",
+                    "createdTime": "2026-06-13T19:41:00.000Z",
+                    "fields": {
+                        "Match No": 2,
+                        "Match": ["recM2"],
+                        "Team": ["recMAR"],
+                        "Scorer": "Y. En-Nesyri",
+                        "Minute": "41'",
+                        "Type": "Penalty"
+                    }
+                }
+            ]
+        }
+        """
+        let page = try AirtableTransport.decoder.decode(
+            AirtablePage<GoalFields>.self,
+            from: Data(json.utf8)
+        )
+        let goals = page.records.compactMap { Goal(record: $0) }
+        #expect(goals.count == 2)
+
+        let opener = try #require(goals.first { $0.scorer == "Vinícius Jr." })
+        #expect(opener.matchNumber == 2)
+        #expect(opener.matchID == "recM2")
+        #expect(opener.teamID == "recBRA")
+        #expect(opener.minute == "23'")
+        #expect(opener.type == .goal)
+
+        let penalty = try #require(goals.first { $0.type == .penalty })
+        #expect(penalty.scorer == "Y. En-Nesyri")
+        #expect(penalty.teamID == "recMAR")
+    }
+
+    @Test func dropsMalformedGoals() throws {
+        let json = """
+        {
+            "records": [
+                {
+                    "id": "recBad",
+                    "createdTime": "2026-06-13T19:00:00.000Z",
+                    "fields": { "Match No": 2, "Type": "Goal" }
+                }
+            ]
+        }
+        """
+        let page = try AirtableTransport.decoder.decode(
+            AirtablePage<GoalFields>.self,
+            from: Data(json.utf8)
+        )
+        #expect(page.records.compactMap { Goal(record: $0) }.isEmpty)
+    }
+
     @Test func dropsMalformedMatches() throws {
         let json = """
         {

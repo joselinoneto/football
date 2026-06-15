@@ -8,7 +8,7 @@ import FootballCore
 @ModelActor
 public actor FootballStore {
     public static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
-        let schema = Schema([StoredTeam.self, StoredMatch.self])
+        let schema = Schema([StoredTeam.self, StoredMatch.self, StoredGoal.self])
         let configuration = ModelConfiguration("Football", schema: schema, isStoredInMemoryOnly: inMemory)
         return try ModelContainer(for: schema, configurations: [configuration])
     }
@@ -25,6 +25,13 @@ public actor FootballStore {
             sortBy: [SortDescriptor(\.kickoff), SortDescriptor(\.number)]
         )
         return try modelContext.fetch(descriptor).map(\.match)
+    }
+
+    public func goals() throws -> [Goal] {
+        let descriptor = FetchDescriptor<StoredGoal>(
+            sortBy: [SortDescriptor(\.matchNumber)]
+        )
+        return try modelContext.fetch(descriptor).map(\.goal)
     }
 
     // MARK: Writes
@@ -53,6 +60,20 @@ public actor FootballStore {
                 storedMatch.update(from: match)
             } else {
                 modelContext.insert(StoredMatch(match))
+            }
+        }
+        existing.values.forEach(modelContext.delete)
+        try modelContext.save()
+    }
+
+    public func replaceGoals(_ goals: [Goal]) throws {
+        let stored = try modelContext.fetch(FetchDescriptor<StoredGoal>())
+        var existing = Dictionary(stored.map { ($0.remoteID, $0) }, uniquingKeysWith: { first, _ in first })
+        for goal in goals {
+            if let storedGoal = existing.removeValue(forKey: goal.id) {
+                storedGoal.update(from: goal)
+            } else {
+                modelContext.insert(StoredGoal(goal))
             }
         }
         existing.values.forEach(modelContext.delete)

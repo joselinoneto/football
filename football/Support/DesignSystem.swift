@@ -32,6 +32,8 @@ enum Design {
     enum Size {
         /// Width of the flag column, so both team lines align.
         static let flagColumn: CGFloat = 30
+        /// Width of the minute column in the goal timeline, so scorers align.
+        static let goalMinuteColumn: CGFloat = 48
         /// Pulsing dot inside the LIVE badge.
         static let liveDot: CGFloat = 6
         /// Accent dot next to the "Today" section header.
