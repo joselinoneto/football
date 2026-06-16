@@ -3,20 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Football App — Support</title>
+  <title>Just Football — Support</title>
   <style>
+    :root { --green: #1f8a4c; --ink: #1c1c1e; --muted: #8e8e93; }
+    * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      max-width: 600px;
+      max-width: 640px;
       margin: 0 auto;
       padding: 48px 24px;
-      color: #1c1c1e;
+      color: var(--ink);
       line-height: 1.6;
     }
-    h1 { font-size: 2rem; margin-bottom: 0.25em; }
+    h1 { font-size: 2rem; margin-bottom: 0.1em; }
+    h2 { font-size: 1.25rem; margin-top: 2em; }
+    .tagline { color: var(--muted); margin-top: 0; }
     .button {
       display: inline-block;
-      background: #25D366;
+      background: #007AFF;
       color: #fff;
       text-decoration: none;
       font-weight: 600;
@@ -24,27 +28,53 @@
       border-radius: 12px;
       margin: 16px 0;
     }
-    .button.email { background: #007AFF; }
-    footer { margin-top: 48px; font-size: 0.85rem; color: #8e8e93; }
+    a { color: var(--green); }
+    .disclaimer {
+      margin-top: 40px;
+      padding: 16px 20px;
+      background: #f2f2f7;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #3a3a3c;
+    }
+    footer { margin-top: 40px; font-size: 0.85rem; color: var(--muted); }
+    footer a { color: var(--muted); }
   </style>
 </head>
 <body>
-  <h1>Support</h1>
-  <p>Need help with the app? Get in touch and we'll respond as soon as possible.</p>
+  <h1>Just Football ⚽</h1>
+  <p class="tagline">The 2026 tournament, nothing else.</p>
 
+  <h2>Support</h2>
+  <p>Need help with the app? Get in touch and we'll respond as soon as possible.</p>
   <p>
-    <a class="button email" href="mailto:joselinoneto@gmail.com?subject=App%20Support">
+    <a class="button" href="mailto:joselinoneto@gmail.com?subject=Just%20Football%20Support">
       Email Support
     </a>
   </p>
 
   <h2>FAQ</h2>
   <p><strong>How often is match data updated?</strong><br>
-  Match schedules and results are refreshed regularly from our data source.</p>
+  Match schedules and results are refreshed regularly from our data source and cached
+  on your device so the app works offline.</p>
+
+  <p><strong>Does the app collect any of my data?</strong><br>
+  No. There are no accounts, no analytics, no tracking, and no third-party SDKs.
+  See our <a href="privacy.html">Privacy Policy</a> for details.</p>
 
   <p><strong>I found a bug. How do I report it?</strong><br>
-  Send us a message on WhatsApp or email with a description of the issue and your device model.</p>
+  Email us a description of the issue and your device model.</p>
 
-  <footer>&copy; 2026 — All rights reserved.</footer>
+  <p class="disclaimer">
+    Just Football is an independent app and is <strong>not affiliated with, endorsed by,
+    sponsored by, or otherwise connected with FIFA</strong> or any of its subsidiaries or
+    affiliates. The app uses no FIFA logos, emblems, official marks, or branding. Team
+    names and national flags are shown for purely descriptive, informational purposes.
+    All trademarks are the property of their respective owners.
+  </p>
+
+  <footer>
+    &copy; 2026 José Neto &middot; <a href="privacy.html">Privacy Policy</a>
+  </footer>
 </body>
 </html>
