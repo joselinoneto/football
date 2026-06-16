@@ -2,7 +2,7 @@ public struct Team: Identifiable, Hashable, Sendable {
     /// Airtable record ID, e.g. "rec2EdEkFBCdYwk3N".
     public let id: String
     public let name: String
-    /// FIFA three-letter code, e.g. "BRA".
+    /// Three-letter country code, e.g. "BRA".
     public let code: String
     /// Group letter A–L.
     public let group: String

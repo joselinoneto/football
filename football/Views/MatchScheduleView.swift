@@ -11,7 +11,7 @@ struct MatchScheduleView: View {
         NavigationStack {
             content
                 .background(AppBackground())
-                .navigationTitle("World Cup 2026")
+                .navigationTitle("Football 2026")
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button("About", systemImage: "info.circle") {
