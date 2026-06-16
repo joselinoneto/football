@@ -19,7 +19,7 @@ struct AboutView: View {
                     .padding(.top, Design.Spacing.section)
 
                     VStack(spacing: Design.Spacing.medium) {
-                        Text(verbatim: "World Cup 2026")
+                        Text(verbatim: "Football 2026")
                             .font(.largeTitle.bold())
                         Text("about.tagline")
                             .font(.title3)

@@ -60,13 +60,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Every team, every group, every match of the FIFA World Cup 2026 — fetched live from the tournament and kept on your device, so it works anywhere."
+            "value" : "Every team, every group, every match of the 2026 tournament — fetched live and kept on your device, so it works anywhere."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Todos os times, todos os grupos, todas as partidas da Copa do Mundo FIFA 2026 — buscadas ao vivo do torneio e guardadas no seu aparelho, para funcionar em qualquer lugar."
+            "value" : "Todos os times, todos os grupos, todas as partidas do torneio de 2026 — buscadas ao vivo e guardadas no seu aparelho, para funcionar em qualquer lugar."
           }
         }
       }
@@ -496,12 +496,12 @@
         }
       }
     },
-    "World Cup 2026" : {
+    "Football 2026" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copa do Mundo 2026"
+            "value" : "Futebol 2026"
           }
         }
       }

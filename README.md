@@ -1,8 +1,8 @@
 # Just Football ⚽
 
-**World Cup 2026, nothing else.**
+**The 2026 tournament, nothing else.**
 
-The simplest way to follow the World Cup 2026 on iOS: all 48 teams, all 12 groups, and every one of the 104 matches — from the opening kickoff to the final.
+The simplest way to follow the 2026 international football tournament on iOS: all 48 teams, all 12 groups, and every one of the 104 matches — from the opening kickoff to the final.
 
 No ads. No accounts. No tracking. Just football.
 
@@ -75,6 +75,6 @@ Questions or problems? See the [support page](https://joselinoneto.github.io/foo
 
 ---
 
-*"Just Football" is an independent app. It refers to the World Cup 2026 descriptively and is not affiliated with or endorsed by FIFA.*
+*"Just Football" is an independent app. It tracks the public schedule and results of the 2026 international football tournament and is not affiliated with, endorsed by, or sponsored by FIFA. It uses no FIFA or World Cup branding, logos, or marks.*
 
 © 2026 José Neto

@@ -4,10 +4,14 @@ Paste-ready content for the first review submission. Two localizations:
 **English (U.S.)** is the primary language, **Portuguese (Brazil)** the second.
 Character limits are noted per field; all texts below fit.
 
-> Trademark note: the copy says "World Cup 2026" descriptively and never uses
-> FIFA branding, logos, or official marks. Keep it that way — Apple's
-> guideline 5.2 rejections come from implying endorsement, not from naming
-> the tournament.
+> Trademark note: this app was rejected once under Guideline 5.2.1 for content
+> "resembling FIFA." FIFA owns "FIFA", "WORLD CUP", and "FIFA WORLD CUP" as
+> registered marks, and App Review will not adjudicate nominative fair use — it
+> just wants the marks gone. So ALL copy below avoids "FIFA", "World Cup", and
+> "Copa do Mundo". The app refers to the event neutrally as the "2026 tournament"
+> / "torneio de 2026" and brands itself "Football 2026" / "Futebol 2026". Never
+> reintroduce FIFA/World Cup branding, logos, the official emblem, or wording
+> that implies affiliation or endorsement.
 
 ---
 
@@ -44,13 +48,13 @@ Just Football
 **Subtitle** (30 max — 28):
 
 ```
-World Cup 2026, nothing else
+The 2026 tournament, nothing else
 ```
 
-**Promotional text** (170 max — 101):
+**Promotional text** (170 max):
 
 ```
-Every match of the World Cup 2026, live and offline. No ads, no accounts, no tracking. Just football.
+Every match of the 2026 tournament, live and offline. No ads, no accounts, no tracking. Just football.
 ```
 
 **Description** (4000 max):
@@ -58,7 +62,7 @@ Every match of the World Cup 2026, live and offline. No ads, no accounts, no tra
 ```
 Football and nothing else.
 
-Just Football is the simplest way to follow the World Cup 2026: all 48 teams, all 12 groups, and every one of the 104 matches — from the opening kickoff to the final.
+Just Football is the simplest way to follow the 2026 tournament: all 48 teams, all 12 groups, and every one of the 104 matches — from the opening kickoff to the final.
 
 THE WHOLE TOURNAMENT, AT A GLANCE
 • Every match, grouped by day and sorted by kickoff
@@ -79,20 +83,19 @@ THE MANIFESTO
 The main idea here is football and nothing else. No ads. No authentication. No tracking. No pink football boots. No soccer. Just football.
 ```
 
-**Keywords** (100 max — 77):
+**Keywords** (100 max):
 
 ```
-football,world cup,2026,matches,scores,fixtures,results,schedule,groups,teams
+football,soccer,2026,matches,scores,fixtures,results,schedule,groups,teams
 ```
 
-> If U.S. discoverability matters more than the manifesto, swap to the 84-char
-> variant — keywords are never shown to users:
-> `football,soccer,world cup,2026,matches,scores,fixtures,results,schedule,teams`
+> Keywords are never shown to users. Note: "world cup" was removed — it is a
+> FIFA mark and contributed to the 5.2.1 rejection. Do not add it back.
 
 **What's New** (version 1.0):
 
 ```
-The opening whistle: every team, every group, every match of the World Cup 2026 — in English and Brazilian Portuguese. No ads, no accounts, no tracking. Just football.
+The opening whistle: every team, every group, every match of the 2026 tournament — in English and Brazilian Portuguese. No ads, no accounts, no tracking. Just football.
 ```
 
 ---
@@ -108,13 +111,13 @@ Só Futebol
 **Subtitle** (30 max — 30):
 
 ```
-Copa do Mundo 2026 e nada mais
+O torneio de 2026 e nada mais
 ```
 
-**Promotional text** (170 max — 117):
+**Promotional text** (170 max):
 
 ```
-Todas as partidas da Copa do Mundo 2026, ao vivo e offline. Sem anúncios, sem cadastro, sem rastreamento. Só futebol.
+Todas as partidas do torneio de 2026, ao vivo e offline. Sem anúncios, sem cadastro, sem rastreamento. Só futebol.
 ```
 
 **Description** (4000 max):
@@ -122,7 +125,7 @@ Todas as partidas da Copa do Mundo 2026, ao vivo e offline. Sem anúncios, sem c
 ```
 Futebol e nada mais.
 
-O Só Futebol é o jeito mais simples de acompanhar a Copa do Mundo 2026: todos os 48 times, todos os 12 grupos e cada uma das 104 partidas — do pontapé inicial à final.
+O Só Futebol é o jeito mais simples de acompanhar o torneio de 2026: todos os 48 times, todos os 12 grupos e cada uma das 104 partidas — do pontapé inicial à final.
 
 O TORNEIO INTEIRO, DE RELANCE
 • Todas as partidas, agrupadas por dia e ordenadas pelo horário
@@ -146,13 +149,13 @@ A ideia aqui é futebol e nada mais. Sem anúncios. Sem autenticação. Sem rast
 **Keywords** (100 max — 83):
 
 ```
-futebol,copa do mundo,2026,partidas,placar,resultados,tabela,jogos,seleções,grupos
+futebol,2026,partidas,placar,resultados,tabela,jogos,seleções,grupos
 ```
 
 **What's New** (version 1.0):
 
 ```
-O apito inicial: todos os times, todos os grupos, todas as partidas da Copa do Mundo 2026 — em português e inglês. Sem anúncios, sem cadastro, sem rastreamento. Só futebol.
+O apito inicial: todos os times, todos os grupos, todas as partidas do torneio de 2026 — em português e inglês. Sem anúncios, sem cadastro, sem rastreamento. Só futebol.
 ```
 
 ---
@@ -162,11 +165,13 @@ O apito inicial: todos os times, todos os grupos, todas as partidas da Copa do M
 **Notes for the reviewer:**
 
 ```
-Just Football displays the public schedule and results of the 2026 World Cup.
+Just Football displays the public schedule and results of the international football tournament held in June–July 2026.
 
+- This app uses no FIFA or World Cup branding, logos, official emblems, or marks. It refers to the event only by date ("the 2026 tournament") and is not affiliated with, endorsed by, or sponsored by FIFA. The previous 5.2.1 rejection has been addressed: every instance of "FIFA" and "World Cup" / "Copa do Mundo" has been removed from the app and its metadata.
+- The displayed data is factual public information — team names, national flags, fixture dates, venues, and scores — none of which is FIFA intellectual property.
 - There is no login, account, or demo credentials — the full app is available immediately on first launch.
-- Content is read-only public tournament data (teams, groups, fixtures, scores) fetched over HTTPS from our hosted database and cached on the device for offline use.
-- Scores and match statuses update as the tournament progresses (June–July 2026), so the data visible during review reflects the real tournament state on that day.
+- Content is read-only public data fetched over HTTPS from our hosted database and cached on the device for offline use.
+- Scores and match statuses update as the tournament progresses (June–July 2026), so the data visible during review reflects the real state on that day.
 - The app collects no user data of any kind: no analytics, no tracking, no third-party SDKs.
 ```
 
