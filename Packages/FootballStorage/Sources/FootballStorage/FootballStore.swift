@@ -8,7 +8,12 @@ import FootballCore
 @ModelActor
 public actor FootballStore {
     public static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
-        let schema = Schema([StoredTeam.self, StoredMatch.self, StoredGoal.self])
+        let schema = Schema([
+            StoredTeam.self, StoredMatch.self, StoredGoal.self,
+            StoredStanding.self, StoredMatchStat.self, StoredLineupEntry.self,
+            StoredTopScorer.self, StoredMatchEvent.self, StoredSquadMember.self,
+            StoredVenue.self,
+        ])
         let configuration = ModelConfiguration("Football", schema: schema, isStoredInMemoryOnly: inMemory)
         return try ModelContainer(for: schema, configurations: [configuration])
     }
@@ -32,6 +37,55 @@ public actor FootballStore {
             sortBy: [SortDescriptor(\.matchNumber)]
         )
         return try modelContext.fetch(descriptor).map(\.goal)
+    }
+
+    public func standings() throws -> [Standing] {
+        let descriptor = FetchDescriptor<StoredStanding>(
+            sortBy: [SortDescriptor(\.groupName), SortDescriptor(\.rank)]
+        )
+        return try modelContext.fetch(descriptor).map(\.standing)
+    }
+
+    public func matchStats() throws -> [MatchStat] {
+        let descriptor = FetchDescriptor<StoredMatchStat>(
+            sortBy: [SortDescriptor(\.matchNumber)]
+        )
+        return try modelContext.fetch(descriptor).map(\.matchStat)
+    }
+
+    public func lineups() throws -> [LineupEntry] {
+        let descriptor = FetchDescriptor<StoredLineupEntry>(
+            sortBy: [SortDescriptor(\.matchNumber), SortDescriptor(\.player)]
+        )
+        return try modelContext.fetch(descriptor).map(\.lineupEntry)
+    }
+
+    public func topScorers() throws -> [TopScorer] {
+        let descriptor = FetchDescriptor<StoredTopScorer>(
+            sortBy: [SortDescriptor(\.rank)]
+        )
+        return try modelContext.fetch(descriptor).map(\.topScorer)
+    }
+
+    public func matchEvents() throws -> [MatchEvent] {
+        let descriptor = FetchDescriptor<StoredMatchEvent>(
+            sortBy: [SortDescriptor(\.matchNumber)]
+        )
+        return try modelContext.fetch(descriptor).map(\.matchEvent)
+    }
+
+    public func squads() throws -> [SquadMember] {
+        let descriptor = FetchDescriptor<StoredSquadMember>(
+            sortBy: [SortDescriptor(\.player)]
+        )
+        return try modelContext.fetch(descriptor).map(\.squadMember)
+    }
+
+    public func venues() throws -> [Venue] {
+        let descriptor = FetchDescriptor<StoredVenue>(
+            sortBy: [SortDescriptor(\.name)]
+        )
+        return try modelContext.fetch(descriptor).map(\.venue)
     }
 
     // MARK: Writes
@@ -78,5 +132,63 @@ public actor FootballStore {
         }
         existing.values.forEach(modelContext.delete)
         try modelContext.save()
+    }
+
+    /// Generic upsert-by-remote-ID + prune, mirroring `replaceTeams` et al.:
+    /// updates rows that still exist, inserts new ones, deletes the rest, so
+    /// the local table mirrors the remote one.
+    private func reconcile<Stored: PersistentModel, Value>(
+        _ values: [Value],
+        id: (Value) -> String,
+        storedID: (Stored) -> String,
+        insert: (Value) -> Stored,
+        update: (Stored, Value) -> Void
+    ) throws {
+        let stored = try modelContext.fetch(FetchDescriptor<Stored>())
+        var existing = Dictionary(stored.map { (storedID($0), $0) }, uniquingKeysWith: { first, _ in first })
+        for value in values {
+            if let row = existing.removeValue(forKey: id(value)) {
+                update(row, value)
+            } else {
+                modelContext.insert(insert(value))
+            }
+        }
+        existing.values.forEach(modelContext.delete)
+        try modelContext.save()
+    }
+
+    public func replaceStandings(_ items: [Standing]) throws {
+        try reconcile(items, id: \.id, storedID: \StoredStanding.remoteID,
+                      insert: StoredStanding.init, update: { $0.update(from: $1) })
+    }
+
+    public func replaceMatchStats(_ items: [MatchStat]) throws {
+        try reconcile(items, id: \.id, storedID: \StoredMatchStat.remoteID,
+                      insert: StoredMatchStat.init, update: { $0.update(from: $1) })
+    }
+
+    public func replaceLineups(_ items: [LineupEntry]) throws {
+        try reconcile(items, id: \.id, storedID: \StoredLineupEntry.remoteID,
+                      insert: StoredLineupEntry.init, update: { $0.update(from: $1) })
+    }
+
+    public func replaceTopScorers(_ items: [TopScorer]) throws {
+        try reconcile(items, id: \.id, storedID: \StoredTopScorer.remoteID,
+                      insert: StoredTopScorer.init, update: { $0.update(from: $1) })
+    }
+
+    public func replaceMatchEvents(_ items: [MatchEvent]) throws {
+        try reconcile(items, id: \.id, storedID: \StoredMatchEvent.remoteID,
+                      insert: StoredMatchEvent.init, update: { $0.update(from: $1) })
+    }
+
+    public func replaceSquads(_ items: [SquadMember]) throws {
+        try reconcile(items, id: \.id, storedID: \StoredSquadMember.remoteID,
+                      insert: StoredSquadMember.init, update: { $0.update(from: $1) })
+    }
+
+    public func replaceVenues(_ items: [Venue]) throws {
+        try reconcile(items, id: \.id, storedID: \StoredVenue.remoteID,
+                      insert: StoredVenue.init, update: { $0.update(from: $1) })
     }
 }

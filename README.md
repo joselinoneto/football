@@ -54,7 +54,39 @@ Requires Xcode with the iOS 26 SDK.
    ```
 
    Then fill in your Airtable base ID and a personal access token with the read-only `data.records:read` scope.
-3. Build and run. Without credentials the project still compiles, and SwiftUI previews work against bundled sample data (`PreviewFootballService`).
+3. Build and run. SwiftUI previews render against bundled sample data (`PreviewFootballService`) with no credentials, but the **app target** needs `Secrets.swift` to compile — it defines `AirtableConfiguration.current`, which `AppDependencies` reads.
+
+### Continuous integration (Xcode Cloud)
+
+`Secrets.swift` is git-ignored, so CI has to supply the credentials another way.
+`ci_scripts/ci_post_clone.sh` regenerates it at build time from two **secret**
+environment variables. Set them on the Xcode Cloud workflow (App Store Connect →
+Xcode Cloud → your workflow → **Environment**), ticking **Secret** so they're
+encrypted and kept out of the build logs:
+
+| Variable | Example |
+|----------|---------|
+| `AIRTABLE_BASE_ID` | `appXXXXXXXXXXXXXX` |
+| `AIRTABLE_TOKEN`   | `patXXXX…` (read-only `data.records:read`) |
+
+Xcode Cloud runs `ci_scripts/ci_post_clone.sh` automatically after cloning, so the
+credentials live only in the workflow's encrypted settings — never in the
+repository or its history. The committed script contains no secrets. It also
+works for other CI systems, or to seed a fresh local checkout:
+
+```sh
+AIRTABLE_BASE_ID=app… AIRTABLE_TOKEN=pat… ./ci_scripts/ci_post_clone.sh
+```
+
+**Build numbers** are set automatically. `ci_scripts/ci_pre_xcodebuild.sh` runs
+before each build and writes the build number (`CURRENT_PROJECT_VERSION`, from
+which `CFBundleVersion` is generated) from Xcode Cloud's own monotonic
+`CI_BUILD_NUMBER` — so every build is unique and increasing with **no commits**.
+The change is made only in the ephemeral CI checkout. The marketing version
+(`MARKETING_VERSION`) is left untouched — bump it by hand only when shipping a
+new version. If App Store Connect already has higher build numbers for the
+current version, set a plain (non-secret) `BUILD_NUMBER_OFFSET` env var on the
+workflow; the build number becomes `CI_BUILD_NUMBER + BUILD_NUMBER_OFFSET`.
 
 ## Tests
 

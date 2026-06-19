@@ -14,7 +14,10 @@ struct WatchMatchDetailView: View {
             if let detail = viewModel.detail(for: matchID) {
                 VStack(spacing: Design.Spacing.large) {
                     Scoreboard(row: detail.row)
-                    GoalTimeline(row: detail.row, goals: detail.goals)
+                    // The shared detail model now carries a merged timeline
+                    // (goals + cards/subs); the watch keeps its compact
+                    // goals-only list.
+                    GoalTimeline(row: detail.row, goals: detail.timeline.filter { $0.goalType != nil })
                 }
             } else {
                 ContentUnavailableView(
@@ -108,7 +111,7 @@ private struct Scoreboard: View {
 
 private struct GoalTimeline: View {
     let row: MatchRowModel
-    let goals: [GoalRowModel]
+    let goals: [TimelineItemModel]
 
     var body: some View {
         VStack(alignment: .leading, spacing: Design.Spacing.medium) {
@@ -141,7 +144,7 @@ private struct GoalTimeline: View {
 }
 
 private struct GoalRow: View {
-    let goal: GoalRowModel
+    let goal: TimelineItemModel
 
     var body: some View {
         HStack(spacing: Design.Spacing.medium) {
@@ -161,10 +164,10 @@ private struct GoalRow: View {
 
     private var scorer: some View {
         HStack(spacing: Design.Spacing.xxSmall) {
-            Text(goal.scorer)
+            Text(goal.primary)
                 .font(.footnote)
                 .lineLimit(1)
-            if let tag = goal.type.shortTag {
+            if let tag = goal.secondary, !tag.isEmpty {
                 Text("(\(tag))")
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.secondary)
@@ -173,10 +176,10 @@ private struct GoalRow: View {
     }
 
     private var accessibilityLabel: Text {
-        if let tag = goal.type.shortTag {
-            return Text("\(goal.minute) \(goal.scorer), \(goal.type.displayName) (\(tag))")
+        if let tag = goal.secondary, !tag.isEmpty {
+            return Text("\(goal.minute) \(goal.primary), \(goal.goalType?.displayName ?? "") (\(tag))")
         }
-        return Text("\(goal.minute) \(goal.scorer)")
+        return Text("\(goal.minute) \(goal.primary)")
     }
 }
 

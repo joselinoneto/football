@@ -44,6 +44,15 @@ public enum Design {
         public static let aboutHalo: CGFloat = 136
         /// Height of the brand-color wash at the top of the schedule canvas.
         public static let canvasWashHeight: CGFloat = 260
+        /// Standings table column widths, so the header and every row align.
+        public static let standingRankColumn: CGFloat = 22
+        public static let standingFlagColumn: CGFloat = 26
+        public static let standingStatColumn: CGFloat = 26
+        public static let standingPointsColumn: CGFloat = 32
+        /// Squad shirt-number column.
+        public static let squadNumberColumn: CGFloat = 28
+        /// Possession/stat comparison bar height in match detail.
+        public static let statBarHeight: CGFloat = 6
     }
 
     /// Insets for capsule pills (LIVE / FT badges).

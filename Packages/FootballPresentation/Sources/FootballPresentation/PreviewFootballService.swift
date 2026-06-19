@@ -60,4 +60,58 @@ public final class PreviewFootballService: FootballService {
                  scorer: "Rodrygo", minute: "67'", type: .goal)
         ]
     }
+
+    public func standings() async throws -> [Standing] {
+        [
+            Standing(id: "recS1", group: "Group A", rank: 1, teamID: "recMEX",
+                     played: 1, win: 1, draw: 0, loss: 0, goalsFor: 2, goalsAgainst: 1,
+                     goalDifference: 1, points: 3, form: "W", qualification: "Round of 32"),
+            Standing(id: "recS2", group: "Group A", rank: 2, teamID: "recRSA",
+                     played: 1, win: 0, draw: 0, loss: 1, goalsFor: 1, goalsAgainst: 2,
+                     goalDifference: -1, points: 0, form: "L", qualification: nil)
+        ]
+    }
+
+    public func matchStats() async throws -> [MatchStat] {
+        [
+            MatchStat(id: "recST1", matchNumber: 1, matchID: "recM1", teamID: "recMEX",
+                      possession: "58%", shotsTotal: 14, shotsOnGoal: 6, shotsOffGoal: 5,
+                      blockedShots: 3, shotsInsideBox: 9, shotsOutsideBox: 5, corners: 6,
+                      offsides: 2, fouls: 8, yellowCards: 1, redCards: 0, saves: 3,
+                      passesTotal: 520, passesAccurate: 460, passesPercent: "88%",
+                      expectedGoals: 1.84),
+            MatchStat(id: "recST2", matchNumber: 1, matchID: "recM1", teamID: "recRSA",
+                      possession: "42%", shotsTotal: 8, shotsOnGoal: 3, shotsOffGoal: 4,
+                      blockedShots: 1, shotsInsideBox: 5, shotsOutsideBox: 3, corners: 3,
+                      offsides: 1, fouls: 11, yellowCards: 2, redCards: 0, saves: 4,
+                      passesTotal: 380, passesAccurate: 300, passesPercent: "79%",
+                      expectedGoals: 0.92)
+        ]
+    }
+
+    public func lineups() async throws -> [LineupEntry] { [] }
+
+    public func topScorers() async throws -> [TopScorer] {
+        [
+            TopScorer(id: "recTS1", rank: 1, player: "S. Giménez", teamID: "recMEX",
+                      goals: 3, assists: 1, penalties: 0, minutes: 270, photoURL: nil),
+            TopScorer(id: "recTS2", rank: 2, player: "Vinícius Jr.", teamID: "recBRA",
+                      goals: 2, assists: 2, penalties: 0, minutes: 180, photoURL: nil)
+        ]
+    }
+
+    public func matchEvents() async throws -> [MatchEvent] {
+        [
+            MatchEvent(id: "recE1", matchNumber: 1, matchID: "recM1", teamID: "recRSA",
+                       type: .yellowCard, player: "T. Mokoena", player2: nil,
+                       detail: "Yellow Card", minute: "39'"),
+            MatchEvent(id: "recE2", matchNumber: 1, matchID: "recM1", teamID: "recMEX",
+                       type: .substitution, player: "H. Lozano", player2: "S. Giménez",
+                       detail: "Substitution", minute: "61'")
+        ]
+    }
+
+    public func squads() async throws -> [SquadMember] { [] }
+
+    public func venues() async throws -> [Venue] { [] }
 }
