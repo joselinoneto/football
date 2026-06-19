@@ -1,0 +1,107 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "(%@)" : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ %@, %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@, %3$@ (%4$@)"
+          }
+        }
+      }
+    },
+    "%@, %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@. %3$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "Football 2026" : {
+      "comment" : "Watch schedule screen title.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Futebol 2026"
+          }
+        }
+      }
+    },
+    "FT" : {
+      "comment" : "Abbreviation for full time, shown on finished matches.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FIM"
+          }
+        }
+      }
+    },
+    "Full time" : {
+      "comment" : "Status for a finished match."
+    },
+    "Goals" : {
+      "comment" : "Heading for the goal timeline."
+    },
+    "Live" : {
+      "comment" : "Accessibility status for a match in progress."
+    },
+    "LIVE" : {
+      "comment" : "Badge on a match in progress.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AO VIVO"
+          }
+        }
+      }
+    },
+    "LIVE · %@" : {
+      "comment" : "Live status including the match minute."
+    },
+    "Match Unavailable" : {
+      "comment" : "Shown when a match cannot be loaded."
+    },
+    "No goals yet." : {
+      "comment" : "Empty goal timeline for a match in progress with no goals."
+    },
+    "No Matches" : {
+      "comment" : "Empty schedule.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem partidas"
+          }
+        }
+      }
+    },
+    "The match hasn't kicked off yet." : {
+      "comment" : "Empty goal timeline for a scheduled match."
+    }
+  },
+  "version" : "1.0"
+}

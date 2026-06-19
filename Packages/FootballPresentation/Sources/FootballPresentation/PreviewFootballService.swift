@@ -3,10 +3,12 @@ import FootballCore
 import FootballManager
 
 /// In-memory stand-in for SwiftUI previews — no network, no SwiftData.
-final class PreviewFootballService: FootballService {
-    func refresh() async throws {}
+public final class PreviewFootballService: FootballService {
+    public init() {}
 
-    func teams() async throws -> [Team] {
+    public func refresh() async throws {}
+
+    public func teams() async throws -> [Team] {
         [
             Team(id: "recMEX", name: "Mexico", code: "MEX", group: "A", flag: "🇲🇽"),
             Team(id: "recRSA", name: "South Africa", code: "RSA", group: "A", flag: "🇿🇦"),
@@ -15,7 +17,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func matches() async throws -> [Match] {
+    public func matches() async throws -> [Match] {
         let now = Date()
         return [
             Match(
@@ -42,7 +44,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func goals() async throws -> [Goal] {
+    public func goals() async throws -> [Goal] {
         [
             Goal(id: "recG1", matchNumber: 1, matchID: "recM1", teamID: "recMEX",
                  scorer: "H. Lozano", minute: "12'", type: .goal),

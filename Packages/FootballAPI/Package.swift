@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "FootballAPI",
-    platforms: [.iOS(.v17), .macOS(.v14), .visionOS(.v1)],
+    platforms: [.iOS(.v17), .macOS(.v14), .visionOS(.v1), .watchOS(.v10)],
     products: [
         .library(name: "FootballAPI", targets: ["FootballAPI"])
     ],

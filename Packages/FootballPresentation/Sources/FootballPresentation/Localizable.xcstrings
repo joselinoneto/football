@@ -1,0 +1,258 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "All" : {
+      "comment" : "Schedule filter showing every match.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas"
+          }
+        }
+      }
+    },
+    "Could not load the matches. Check your connection and try again." : {
+      "comment" : "Shown when there is no cached data and the network fetch failed.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível carregar as partidas. Verifique sua conexão e tente novamente."
+          }
+        }
+      }
+    },
+    "Finished" : {
+      "comment" : "Schedule filter showing finished matches.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerradas"
+          }
+        }
+      }
+    },
+    "goal.tag.ownGoal" : {
+      "comment" : "Short tag after a scorer for an own goal.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "OG"
+          }
+        }
+      }
+    },
+    "goal.tag.penalty" : {
+      "comment" : "Short tag after a scorer for a penalty goal.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "pen"
+          }
+        }
+      }
+    },
+    "goal.type.goal" : {
+      "comment" : "Accessibility label for a regular goal.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Goal"
+          }
+        }
+      }
+    },
+    "goal.type.ownGoal" : {
+      "comment" : "Accessibility label for an own goal.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Own goal"
+          }
+        }
+      }
+    },
+    "goal.type.penalty" : {
+      "comment" : "Accessibility label for a penalty goal.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Penalty"
+          }
+        }
+      }
+    },
+    "stage.final" : {
+      "comment" : "Tournament stage name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Final"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Final"
+          }
+        }
+      }
+    },
+    "stage.group" : {
+      "comment" : "Tournament stage name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Group stage"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fase de grupos"
+          }
+        }
+      }
+    },
+    "stage.quarterFinal" : {
+      "comment" : "Tournament stage name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quarter-final"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quartas de final"
+          }
+        }
+      }
+    },
+    "stage.roundOf16" : {
+      "comment" : "Tournament stage name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Round of 16"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oitavas de final"
+          }
+        }
+      }
+    },
+    "stage.roundOf32" : {
+      "comment" : "Tournament stage name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Round of 32"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "16 avos de final"
+          }
+        }
+      }
+    },
+    "stage.semiFinal" : {
+      "comment" : "Tournament stage name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Semi-final"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Semifinal"
+          }
+        }
+      }
+    },
+    "stage.thirdPlace" : {
+      "comment" : "Tournament stage name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Third place"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disputa do terceiro lugar"
+          }
+        }
+      }
+    },
+    "To be decided" : {
+      "comment" : "Placeholder team name for an undecided knockout slot.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A definir"
+          }
+        }
+      }
+    },
+    "Today" : {
+      "comment" : "Schedule filter and day header for today's matches.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoje"
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "comment" : "Schedule filter showing matches that have not finished.",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximas"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

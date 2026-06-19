@@ -1,4 +1,5 @@
 import SwiftUI
+import FootballPresentation
 
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss

@@ -1,5 +1,6 @@
 import SwiftUI
 import FootballCore
+import FootballPresentation
 
 struct MatchScheduleView: View {
     @State var viewModel: MatchScheduleViewModel

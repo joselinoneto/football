@@ -5,24 +5,24 @@ import FootballManager
 
 @MainActor
 @Observable
-final class MatchScheduleViewModel {
-    enum Phase: Equatable {
+public final class MatchScheduleViewModel {
+    public enum Phase: Equatable {
         case loading
         case loaded
         case failed(String)
     }
 
-    private(set) var phase: Phase = .loading
-    private(set) var days: [MatchDay] = []
+    public private(set) var phase: Phase = .loading
+    public private(set) var days: [MatchDay] = []
     /// Goal timelines keyed by match record ID, sorted by minute.
     private(set) var goalsByMatch: [String: [GoalRowModel]] = [:]
     /// Rows keyed by match record ID, for the detail screen lookup.
     private(set) var rowsByID: [String: MatchRowModel] = [:]
-    var selectedFilter: MatchFilter = .all
+    public var selectedFilter: MatchFilter = .all
 
     /// The grouped days narrowed down to the active filter, dropping any day
     /// left without matching matches.
-    var filteredDays: [MatchDay] {
+    public var filteredDays: [MatchDay] {
         switch selectedFilter {
         case .all:
             return days
@@ -37,7 +37,7 @@ final class MatchScheduleViewModel {
 
     private let service: any FootballService
 
-    init(service: any FootballService) {
+    public init(service: any FootballService) {
         self.service = service
     }
 
@@ -45,7 +45,7 @@ final class MatchScheduleViewModel {
     /// from the network on an adaptive cadence — fast while a match is live,
     /// slower otherwise. The loop ends when the owning `.task` is cancelled
     /// (i.e. the screen goes away), so there is no manual lifecycle to manage.
-    func start() async {
+    public func start() async {
         await loadFromStore()
         while !Task.isCancelled {
             await refresh()
@@ -64,12 +64,12 @@ final class MatchScheduleViewModel {
     /// The match plus its goal timeline, resolved live from the store-backed
     /// state. Reading the observable properties here keeps the detail screen
     /// in sync as polling updates come in.
-    func detail(for matchID: String) -> MatchDetailModel? {
+    public func detail(for matchID: String) -> MatchDetailModel? {
         guard let row = rowsByID[matchID] else { return nil }
         return MatchDetailModel(row: row, goals: goalsByMatch[matchID] ?? [])
     }
 
-    func refresh() async {
+    public func refresh() async {
         do {
             try await service.refresh()
             await loadFromStore()
@@ -103,7 +103,7 @@ final class MatchScheduleViewModel {
     }
 
     private static var loadFailureMessage: String {
-        String(localized: "Could not load the matches. Check your connection and try again.")
+        String(localized: "Could not load the matches. Check your connection and try again.", bundle: .module)
     }
 
     // MARK: Presentation
@@ -153,64 +153,70 @@ final class MatchScheduleViewModel {
     }
 }
 
-enum MatchFilter: String, CaseIterable, Identifiable {
+public enum MatchFilter: String, CaseIterable, Identifiable {
     case all
     case today
     case upcoming
     case finished
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
-    var title: String {
+    public var title: String {
         switch self {
-        case .all: String(localized: "All")
-        case .today: String(localized: "Today")
-        case .upcoming: String(localized: "Upcoming")
-        case .finished: String(localized: "Finished")
+        case .all: String(localized: "All", bundle: .module)
+        case .today: String(localized: "Today", bundle: .module)
+        case .upcoming: String(localized: "Upcoming", bundle: .module)
+        case .finished: String(localized: "Finished", bundle: .module)
         }
     }
 }
 
-struct MatchDay: Identifiable {
-    let date: Date
-    let isToday: Bool
-    let rows: [MatchRowModel]
+public struct MatchDay: Identifiable {
+    public let date: Date
+    public let isToday: Bool
+    public let rows: [MatchRowModel]
 
-    var id: Date { date }
+    public var id: Date { date }
 
-    var title: String {
+    public var title: String {
         if isToday {
-            return String(localized: "Today")
+            return String(localized: "Today", bundle: .module)
         }
         return date.formatted(.dateTime.weekday(.wide).day().month(.wide))
     }
 
+    init(date: Date, isToday: Bool, rows: [MatchRowModel]) {
+        self.date = date
+        self.isToday = isToday
+        self.rows = rows
+    }
+
     /// Returns a copy keeping only matching rows, or nil if none remain.
-    func keepingRows(_ isIncluded: (MatchRowModel) -> Bool) -> MatchDay? {
+    public func keepingRows(_ isIncluded: (MatchRowModel) -> Bool) -> MatchDay? {
         let kept = rows.filter(isIncluded)
         return kept.isEmpty ? nil : MatchDay(date: date, isToday: isToday, rows: kept)
     }
 }
 
 /// Everything a row needs, resolved up front so the view stays dumb.
-struct MatchRowModel: Identifiable {
-    struct Side {
-        let flag: String
-        let name: String
-        let score: Int?
+public struct MatchRowModel: Identifiable {
+    public struct Side {
+        public let flag: String
+        public let name: String
+        public let score: Int?
     }
 
-    let id: String
-    let kickoff: Date
-    let stage: Stage
-    let venue: String
-    let status: MatchStatus
+    public let id: String
+    public let kickoff: Date
+    public let stage: Stage
+    public let venue: String
+    public let status: MatchStatus
     /// Live match clock, e.g. "67'"; only meaningful while `status == .live`.
-    let minute: String?
-    let home: Side
-    let away: Side
+    public let minute: String?
+    public let home: Side
+    public let away: Side
 
-    init(match: Match, teamsByID: [String: Team]) {
+    public init(match: Match, teamsByID: [String: Team]) {
         id = match.id
         kickoff = match.kickoff
         stage = match.stage
@@ -231,11 +237,11 @@ struct MatchRowModel: Identifiable {
         )
     }
 
-    var detail: String {
+    public var detail: String {
         stage == .group ? venue : "\(stage.displayName) · \(venue)"
     }
 
-    var showsScore: Bool { status != .scheduled }
+    public var showsScore: Bool { status != .scheduled }
 }
 
 extension MatchRowModel.Side {
@@ -246,7 +252,7 @@ extension MatchRowModel.Side {
             // Knockout slot not decided yet, e.g. "Winner Match 74".
             self.init(
                 flag: "",
-                name: fallbackName ?? String(localized: "To be decided"),
+                name: fallbackName ?? String(localized: "To be decided", bundle: .module),
                 score: score
             )
         }
@@ -254,21 +260,21 @@ extension MatchRowModel.Side {
 }
 
 /// A match paired with its goal timeline, for the detail screen.
-struct MatchDetailModel {
-    let row: MatchRowModel
-    let goals: [GoalRowModel]
+public struct MatchDetailModel {
+    public let row: MatchRowModel
+    public let goals: [GoalRowModel]
 }
 
 /// One goal, resolved for display: scoring side's flag, which side it's on,
 /// and a numeric key so "90+2'" sorts after "90'".
-struct GoalRowModel: Identifiable {
-    let id: String
-    let minute: String
+public struct GoalRowModel: Identifiable {
+    public let id: String
+    public let minute: String
     let sortKey: Int
-    let scorer: String
-    let type: GoalType
-    let flag: String
-    let isHome: Bool
+    public let scorer: String
+    public let type: GoalType
+    public let flag: String
+    public let isHome: Bool
 
     init(goal: Goal, flag: String, isHome: Bool) {
         id = goal.id

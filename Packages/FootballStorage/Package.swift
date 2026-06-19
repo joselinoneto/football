@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "FootballStorage",
-    platforms: [.iOS(.v17), .macOS(.v14), .visionOS(.v1)],
+    platforms: [.iOS(.v17), .macOS(.v14), .visionOS(.v1), .watchOS(.v10)],
     products: [
         .library(name: "FootballStorage", targets: ["FootballStorage"])
     ],
