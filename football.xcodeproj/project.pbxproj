@@ -11,12 +11,12 @@
 		82CC9D032FDC900000B32264 /* FootballAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 82CC9D022FDC900000B32264 /* FootballAPI */; };
 		82CC9D052FDC900000B32264 /* FootballStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 82CC9D042FDC900000B32264 /* FootballStorage */; };
 		82CC9D072FDC900000B32264 /* FootballManager in Frameworks */ = {isa = PBXBuildFile; productRef = 82CC9D062FDC900000B32264 /* FootballManager */; };
-		D100000000000000000000D3 /* FootballPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000D2 /* FootballPresentation */; };
 		D100000000000000000000C1 /* FootballCore in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000B1 /* FootballCore */; };
 		D100000000000000000000C2 /* FootballAPI in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000B2 /* FootballAPI */; };
 		D100000000000000000000C3 /* FootballStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000B3 /* FootballStorage */; };
 		D100000000000000000000C4 /* FootballManager in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000B4 /* FootballManager */; };
 		D100000000000000000000C5 /* FootballPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000B5 /* FootballPresentation */; };
+		D100000000000000000000D3 /* FootballPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000D2 /* FootballPresentation */; };
 		D100000000000000000000E2 /* footballWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D100000000000000000000A2 /* footballWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -604,10 +604,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = FootballManager;
 		};
-		D100000000000000000000D2 /* FootballPresentation */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = FootballPresentation;
-		};
 		D100000000000000000000B1 /* FootballCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FootballCore;
@@ -625,6 +621,10 @@
 			productName = FootballManager;
 		};
 		D100000000000000000000B5 /* FootballPresentation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballPresentation;
+		};
+		D100000000000000000000D2 /* FootballPresentation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FootballPresentation;
 		};
