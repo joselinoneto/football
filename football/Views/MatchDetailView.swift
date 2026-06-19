@@ -12,13 +12,10 @@ struct MatchDetailView: View {
         ScrollView {
             if let detail = viewModel.detail(for: matchID) {
                 VStack(spacing: Design.Spacing.section) {
-                    Scoreboard(row: detail.row)
+                    Scoreboard(row: detail.row, viewModel: viewModel)
                     TimelineCard(row: detail.row, items: detail.timeline)
                     if !detail.stats.isEmpty {
                         StatsCard(stats: detail.stats)
-                    }
-                    if !detail.lineups.isEmpty {
-                        LineupsCard(lineups: detail.lineups)
                     }
                 }
                 .padding(.horizontal)
@@ -41,6 +38,7 @@ struct MatchDetailView: View {
 
 private struct Scoreboard: View {
     let row: MatchRowModel
+    let viewModel: MatchScheduleViewModel
 
     var body: some View {
         VStack(spacing: Design.Spacing.large) {
@@ -68,15 +66,27 @@ private struct Scoreboard: View {
         let won = row.status == .finished && (side.score ?? 0) > (opponentScore ?? 0)
         let lost = row.status == .finished && (side.score ?? 0) < (opponentScore ?? 0)
 
+        let name = Text(side.name)
+            .font(.title3)
+            .fontWeight(won ? .semibold : .regular)
+            .foregroundStyle(decided && !lost ? .primary : .secondary)
+            .lineLimit(1)
+
         return HStack(spacing: Design.Spacing.xLarge) {
             Text(side.flag.isEmpty ? "—" : side.flag)
                 .font(.largeTitle)
                 .frame(width: Design.Size.flagColumn, alignment: .center)
-            Text(side.name)
-                .font(.title3)
-                .fontWeight(won ? .semibold : .regular)
-                .foregroundStyle(decided && !lost ? .primary : .secondary)
-                .lineLimit(1)
+            // Tapping a decided team opens its squad.
+            if let teamID = side.teamID {
+                NavigationLink {
+                    TeamDetailView(viewModel: viewModel, teamID: teamID)
+                } label: {
+                    name
+                }
+                .buttonStyle(.plain)
+            } else {
+                name
+            }
             Spacer(minLength: Design.Spacing.medium)
             if row.status != .scheduled, let score = side.score {
                 Text("\(score)")
@@ -271,87 +281,6 @@ private struct StatComparisonView: View {
                     }
                 }
                 .frame(height: Design.Size.statBarHeight)
-            }
-        }
-    }
-}
-
-// MARK: - Lineups
-
-private struct LineupsCard: View {
-    let lineups: MatchLineupsModel
-
-    var body: some View {
-        SectionCard(title: "Lineups") {
-            VStack(alignment: .leading, spacing: Design.Spacing.section) {
-                TeamLineupView(team: lineups.home)
-                TeamLineupView(team: lineups.away)
-            }
-        }
-    }
-}
-
-private struct TeamLineupView: View {
-    let team: TeamLineupModel
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Design.Spacing.large) {
-            HStack(spacing: Design.Spacing.small) {
-                if !team.flag.isEmpty { Text(team.flag) }
-                Text(team.name)
-                    .font(.subheadline.weight(.semibold))
-            }
-            ForEach(team.starters) { player in
-                LineupPlayerRow(player: player)
-            }
-            if !team.bench.isEmpty {
-                Text("Substitutes")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-                    .textCase(.uppercase)
-                    .padding(.top, Design.Spacing.xSmall)
-                ForEach(team.bench) { player in
-                    LineupPlayerRow(player: player)
-                }
-            }
-        }
-    }
-}
-
-private struct LineupPlayerRow: View {
-    let player: LineupRowModel
-
-    var body: some View {
-        HStack(spacing: Design.Spacing.medium) {
-            Text(player.number.map { "\($0)" } ?? "–")
-                .font(.caption.weight(.semibold).monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(width: Design.Size.squadNumberColumn, alignment: .center)
-            Text(player.name)
-                .font(.callout)
-                .lineLimit(1)
-            if player.captain {
-                Text("C")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(Color.pitch)
-            }
-            if player.goals > 0 {
-                HStack(spacing: 1) {
-                    ForEach(0..<player.goals, id: \.self) { _ in
-                        Image(systemName: "soccerball").font(.caption2).foregroundStyle(Color.pitch)
-                    }
-                }
-            }
-            Spacer(minLength: Design.Spacing.small)
-            if let code = player.positionCode {
-                Text(code)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-            if let rating = player.rating {
-                Text(rating)
-                    .font(.caption.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(.secondary)
             }
         }
     }

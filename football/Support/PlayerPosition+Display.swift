@@ -12,16 +12,6 @@ extension PlayerPosition {
         }
     }
 
-    /// Short tag shown in compact rows, e.g. "GK".
-    var shortCode: String {
-        switch self {
-        case .goalkeeper: String(localized: "position.short.goalkeeper", defaultValue: "GK")
-        case .defender: String(localized: "position.short.defender", defaultValue: "DF")
-        case .midfielder: String(localized: "position.short.midfielder", defaultValue: "MF")
-        case .attacker: String(localized: "position.short.attacker", defaultValue: "FW")
-        }
-    }
-
     /// Sort order goalkeeper → attacker, for grouping a roster by line.
     var sortOrder: Int {
         switch self {

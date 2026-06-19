@@ -1,10 +1,11 @@
 import SwiftUI
 import FootballCore
 
-/// A team's roster, grouped by line. Reads from the teams view model by ID so
-/// it reflects refreshes while open, mirroring `MatchDetailView`.
+/// A team's roster, grouped by line. Reached by tapping a country name (e.g.
+/// from the standings); reads from the shared view model by ID so it reflects
+/// refreshes while open, mirroring `MatchDetailView`.
 struct TeamDetailView: View {
-    let viewModel: TeamsViewModel
+    let viewModel: MatchScheduleViewModel
     let teamID: String
 
     var body: some View {
@@ -108,7 +109,7 @@ private struct PlayerRow: View {
     NavigationStack {
         TeamDetailView(
             viewModel: {
-                let vm = TeamsViewModel(service: PreviewFootballService())
+                let vm = MatchScheduleViewModel(service: PreviewFootballService())
                 Task { await vm.start() }
                 return vm
             }(),

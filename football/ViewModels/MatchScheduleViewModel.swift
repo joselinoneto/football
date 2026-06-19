@@ -23,9 +23,11 @@ final class MatchScheduleViewModel {
     /// match's display models are built.
     private(set) var eventsByMatch: [String: [MatchEvent]] = [:]
     private(set) var statsByMatch: [String: [MatchStat]] = [:]
-    private(set) var lineupsByMatch: [String: [LineupEntry]] = [:]
+    /// Group standings, shown in the Matches screen's Standings segment.
+    private(set) var standingsGroups: [StandingsGroup] = []
     private var teamsByID: [String: Team] = [:]
     private var matchesByID: [String: Match] = [:]
+    private var squadsByTeam: [String: [SquadMember]] = [:]
     var selectedFilter: MatchFilter = .all
 
     /// The grouped days narrowed down to the active filter, dropping any day
@@ -83,13 +85,30 @@ final class MatchScheduleViewModel {
                 homeTeamID: match?.homeTeamID,
                 teamsByID: teamsByID
             ),
-            stats: Self.statsModel(statsByMatch[matchID] ?? [], homeTeamID: match?.homeTeamID),
-            lineups: Self.lineupsModel(
-                lineupsByMatch[matchID] ?? [],
-                match: match,
-                teamsByID: teamsByID
-            )
+            stats: Self.statsModel(statsByMatch[matchID] ?? [], homeTeamID: match?.homeTeamID)
         )
+    }
+
+    /// A team's display row, for the team detail screen reached by tapping a
+    /// country name (e.g. from the standings).
+    func team(for teamID: String) -> TeamRowModel? {
+        teamsByID[teamID].map(TeamRowModel.init)
+    }
+
+    /// The team's roster, split into goalkeeper/defender/midfielder/attacker
+    /// sections, each ordered by shirt number.
+    func squadSections(for teamID: String) -> [SquadLineSection] {
+        let members = squadsByTeam[teamID] ?? []
+        return Dictionary(grouping: members, by: { $0.position })
+            .map { position, members in
+                SquadLineSection(
+                    position: position,
+                    members: members
+                        .sorted { ($0.number ?? .max, $0.player) < ($1.number ?? .max, $1.player) }
+                        .map(SquadRowModel.init)
+                )
+            }
+            .sorted { $0.sortOrder < $1.sortOrder }
     }
 
     func refresh() async {
@@ -112,9 +131,11 @@ final class MatchScheduleViewModel {
             async let goalsTask = service.goals()
             async let eventsTask = service.matchEvents()
             async let statsTask = service.matchStats()
-            async let lineupsTask = service.lineups()
+            async let standingsTask = service.standings()
+            async let squadsTask = service.squads()
             let (matches, teams, goals) = try await (matchesTask, teamsTask, goalsTask)
-            let (events, stats, lineups) = try await (eventsTask, statsTask, lineupsTask)
+            let (events, stats) = try await (eventsTask, statsTask)
+            let (standings, squads) = try await (standingsTask, squadsTask)
             let rows = Self.rows(matches: matches, teams: teams)
             days = Self.groupedByDay(rows)
             rowsByID = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -124,7 +145,9 @@ final class MatchScheduleViewModel {
             goalsByMatch = Self.goalsByMatch(goals, matches: matches, teams: teams)
             eventsByMatch = Self.bucket(events, matchID: \.matchID, number: \.matchNumber, idByNumber: idByNumber)
             statsByMatch = Self.bucket(stats, matchID: \.matchID, number: \.matchNumber, idByNumber: idByNumber)
-            lineupsByMatch = Self.bucket(lineups, matchID: \.matchID, number: \.matchNumber, idByNumber: idByNumber)
+            standingsGroups = Self.standingsGroups(standings, teamsByID: teamsByID)
+            squadsByTeam = Dictionary(grouping: squads.compactMap { m in m.teamID.map { ($0, m) } },
+                                      by: { $0.0 }).mapValues { $0.map(\.1) }
             if !days.isEmpty {
                 phase = .loaded
             }
@@ -180,6 +203,18 @@ final class MatchScheduleViewModel {
             result[matchID]?.sort { $0.sortKey < $1.sortKey }
         }
         return result
+    }
+
+    private static func standingsGroups(_ standings: [Standing], teamsByID: [String: Team]) -> [StandingsGroup] {
+        Dictionary(grouping: standings, by: \.group)
+            .map { name, rows in
+                StandingsGroup(
+                    name: name,
+                    rows: rows.sorted { $0.rank < $1.rank }
+                        .map { StandingRowModel(standing: $0, team: $0.teamID.flatMap { teamsByID[$0] }) }
+                )
+            }
+            .sorted { $0.sortKey < $1.sortKey }
     }
 
     private static func groupedByDay(_ rows: [MatchRowModel]) -> [MatchDay] {
@@ -244,6 +279,9 @@ struct MatchDay: Identifiable {
 /// Everything a row needs, resolved up front so the view stays dumb.
 struct MatchRowModel: Identifiable {
     struct Side {
+        /// Linked Team record ID; nil when the team isn't decided yet. Lets the
+        /// detail screen turn the team name into a link to its squad.
+        let teamID: String?
         let flag: String
         let name: String
         let score: Int?
@@ -290,10 +328,11 @@ struct MatchRowModel: Identifiable {
 extension MatchRowModel.Side {
     init(teamID: String?, fallbackName: String?, score: Int?, teamsByID: [String: Team]) {
         if let teamID, let team = teamsByID[teamID] {
-            self.init(flag: team.flag, name: team.name, score: score)
+            self.init(teamID: teamID, flag: team.flag, name: team.name, score: score)
         } else {
             // Knockout slot not decided yet, e.g. "Winner Match 74".
             self.init(
+                teamID: nil,
                 flag: "",
                 name: fallbackName ?? String(localized: "To be decided"),
                 score: score
@@ -307,7 +346,6 @@ struct MatchDetailModel {
     let row: MatchRowModel
     let timeline: [TimelineItemModel]
     let stats: MatchStatsModel
-    let lineups: MatchLineupsModel
 }
 
 // MARK: - Detail builders
@@ -341,23 +379,6 @@ extension MatchScheduleViewModel {
         let home = stats.first { $0.teamID != nil && $0.teamID == homeTeamID }
         let away = stats.first { $0.id != home?.id }
         return MatchStatsModel(home: home, away: away)
-    }
-
-    static func lineupsModel(
-        _ lineups: [LineupEntry],
-        match: Match?,
-        teamsByID: [String: Team]
-    ) -> MatchLineupsModel {
-        func side(_ teamID: String?) -> TeamLineupModel {
-            let entries = lineups.filter { $0.teamID != nil && $0.teamID == teamID }
-            let team = teamID.flatMap { teamsByID[$0] }
-            return TeamLineupModel(
-                flag: team?.flag ?? "",
-                name: team?.name ?? "",
-                entries: entries
-            )
-        }
-        return MatchLineupsModel(home: side(match?.homeTeamID), away: side(match?.awayTeamID))
     }
 }
 
@@ -470,57 +491,6 @@ struct StatComparisonRow: Identifiable {
     }
 }
 
-/// Both sides' lineups for the detail screen.
-struct MatchLineupsModel {
-    let home: TeamLineupModel
-    let away: TeamLineupModel
-    var isEmpty: Bool { home.starters.isEmpty && away.starters.isEmpty }
-}
-
-struct TeamLineupModel {
-    let flag: String
-    let name: String
-    let starters: [LineupRowModel]
-    let bench: [LineupRowModel]
-
-    init(flag: String, name: String, entries: [LineupEntry]) {
-        self.flag = flag
-        self.name = name
-        func sorted(_ entries: [LineupEntry]) -> [LineupRowModel] {
-            entries
-                .sorted { lhs, rhs in
-                    let l = lhs.position?.sortOrder ?? 99
-                    let r = rhs.position?.sortOrder ?? 99
-                    if l != r { return l < r }
-                    return (lhs.number ?? .max) < (rhs.number ?? .max)
-                }
-                .map(LineupRowModel.init)
-        }
-        starters = sorted(entries.filter(\.started))
-        bench = sorted(entries.filter { !$0.started })
-    }
-}
-
-struct LineupRowModel: Identifiable {
-    let id: String
-    let number: Int?
-    let name: String
-    let positionCode: String?
-    let captain: Bool
-    let rating: String?
-    let goals: Int
-
-    init(_ entry: LineupEntry) {
-        id = entry.id
-        number = entry.number
-        name = entry.player
-        positionCode = entry.position?.shortCode
-        captain = entry.captain
-        rating = entry.rating.map { String(format: "%.1f", $0) }
-        goals = entry.goals
-    }
-}
-
 /// One goal, resolved for display: scoring side's flag, which side it's on,
 /// and a numeric key so "90+2'" sorts after "90'".
 struct GoalRowModel: Identifiable {
@@ -548,5 +518,104 @@ struct GoalRowModel: Identifiable {
         let base = Int(parts.first ?? "") ?? 0
         let extra = parts.count > 1 ? (Int(parts[1]) ?? 0) : 0
         return base * 100 + extra
+    }
+}
+
+// MARK: - Standings presentation
+
+struct StandingsGroup: Identifiable {
+    let name: String
+    let rows: [StandingRowModel]
+
+    var id: String { name }
+
+    /// The pooled third-placed ranking sorts last and is labelled differently.
+    var isThirdPlaceRanking: Bool { name == "Group Stage" }
+    var sortKey: String { isThirdPlaceRanking ? "ZZZ" : name }
+
+    var title: String {
+        if isThirdPlaceRanking {
+            return String(localized: "Third-placed teams")
+        }
+        if name.hasPrefix("Group "), let letter = name.split(separator: " ").last {
+            return String(localized: "Group \(String(letter))")
+        }
+        return name
+    }
+}
+
+/// One standings row, resolved for display.
+struct StandingRowModel: Identifiable {
+    let id: String
+    let rank: Int
+    let teamID: String?
+    let flag: String
+    let name: String
+    let played: Int
+    let goalDifference: Int
+    let points: Int
+    let form: String
+    let qualification: String?
+
+    init(standing: Standing, team: Team?) {
+        id = standing.id
+        rank = standing.rank
+        teamID = standing.teamID
+        flag = team?.flag ?? ""
+        name = team?.name ?? "—"
+        played = standing.played
+        goalDifference = standing.goalDifference
+        points = standing.points
+        form = standing.form
+        qualification = standing.qualification
+    }
+
+    var qualifies: Bool { qualification != nil }
+
+    /// Localized qualification label; reuses the stage names where they match.
+    var qualificationLabel: String? {
+        guard let qualification else { return nil }
+        return Stage(rawValue: qualification)?.displayName ?? qualification
+    }
+}
+
+// MARK: - Team / squad presentation
+
+struct TeamRowModel: Identifiable {
+    let id: String
+    let name: String
+    let code: String
+    let flag: String
+    let group: String
+
+    init(_ team: Team) {
+        id = team.id
+        name = team.name
+        code = team.code
+        flag = team.flag
+        group = team.group
+    }
+}
+
+struct SquadLineSection: Identifiable {
+    let position: PlayerPosition?
+    let members: [SquadRowModel]
+
+    var id: String { position?.rawValue ?? "other" }
+    var sortOrder: Int { position?.sortOrder ?? 99 }
+    var title: String { position?.displayName ?? String(localized: "Squad") }
+}
+
+struct SquadRowModel: Identifiable {
+    let id: String
+    let number: Int?
+    let name: String
+    let age: Int?
+
+    init(_ member: SquadMember) {
+        id = member.id
+        number = member.number
+        name = member.player
+        age = member.age
     }
 }
