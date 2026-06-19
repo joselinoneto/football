@@ -18,6 +18,14 @@ final class MatchScheduleViewModel {
     private(set) var goalsByMatch: [String: [GoalRowModel]] = [:]
     /// Rows keyed by match record ID, for the detail screen lookup.
     private(set) var rowsByID: [String: MatchRowModel] = [:]
+    /// Rich detail collections keyed by match record ID, resolved on demand by
+    /// `detail(for:)`. Kept raw here so polling stays cheap — only the open
+    /// match's display models are built.
+    private(set) var eventsByMatch: [String: [MatchEvent]] = [:]
+    private(set) var statsByMatch: [String: [MatchStat]] = [:]
+    private(set) var lineupsByMatch: [String: [LineupEntry]] = [:]
+    private var teamsByID: [String: Team] = [:]
+    private var matchesByID: [String: Match] = [:]
     var selectedFilter: MatchFilter = .all
 
     /// The grouped days narrowed down to the active filter, dropping any day
@@ -66,7 +74,22 @@ final class MatchScheduleViewModel {
     /// in sync as polling updates come in.
     func detail(for matchID: String) -> MatchDetailModel? {
         guard let row = rowsByID[matchID] else { return nil }
-        return MatchDetailModel(row: row, goals: goalsByMatch[matchID] ?? [])
+        let match = matchesByID[matchID]
+        return MatchDetailModel(
+            row: row,
+            timeline: Self.timeline(
+                goals: goalsByMatch[matchID] ?? [],
+                events: eventsByMatch[matchID] ?? [],
+                homeTeamID: match?.homeTeamID,
+                teamsByID: teamsByID
+            ),
+            stats: Self.statsModel(statsByMatch[matchID] ?? [], homeTeamID: match?.homeTeamID),
+            lineups: Self.lineupsModel(
+                lineupsByMatch[matchID] ?? [],
+                match: match,
+                teamsByID: teamsByID
+            )
+        )
     }
 
     func refresh() async {
@@ -87,11 +110,21 @@ final class MatchScheduleViewModel {
             async let teamsTask = service.teams()
             async let matchesTask = service.matches()
             async let goalsTask = service.goals()
+            async let eventsTask = service.matchEvents()
+            async let statsTask = service.matchStats()
+            async let lineupsTask = service.lineups()
             let (matches, teams, goals) = try await (matchesTask, teamsTask, goalsTask)
+            let (events, stats, lineups) = try await (eventsTask, statsTask, lineupsTask)
             let rows = Self.rows(matches: matches, teams: teams)
             days = Self.groupedByDay(rows)
             rowsByID = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            teamsByID = Dictionary(teams.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            matchesByID = Dictionary(matches.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            let idByNumber = Dictionary(matches.map { ($0.number, $0.id) }, uniquingKeysWith: { first, _ in first })
             goalsByMatch = Self.goalsByMatch(goals, matches: matches, teams: teams)
+            eventsByMatch = Self.bucket(events, matchID: \.matchID, number: \.matchNumber, idByNumber: idByNumber)
+            statsByMatch = Self.bucket(stats, matchID: \.matchID, number: \.matchNumber, idByNumber: idByNumber)
+            lineupsByMatch = Self.bucket(lineups, matchID: \.matchID, number: \.matchNumber, idByNumber: idByNumber)
             if !days.isEmpty {
                 phase = .loaded
             }
@@ -100,6 +133,22 @@ final class MatchScheduleViewModel {
                 phase = .failed(Self.loadFailureMessage)
             }
         }
+    }
+
+    /// Buckets match-scoped items under their match record ID, resolving the ID
+    /// from the linked record or falling back to the match number.
+    private static func bucket<T>(
+        _ items: [T],
+        matchID: (T) -> String?,
+        number: (T) -> Int,
+        idByNumber: [Int: String]
+    ) -> [String: [T]] {
+        var out: [String: [T]] = [:]
+        for item in items {
+            guard let mid = matchID(item) ?? idByNumber[number(item)] else { continue }
+            out[mid, default: []].append(item)
+        }
+        return out
     }
 
     private static var loadFailureMessage: String {
@@ -253,10 +302,223 @@ extension MatchRowModel.Side {
     }
 }
 
-/// A match paired with its goal timeline, for the detail screen.
+/// A match paired with its resolved detail content, for the detail screen.
 struct MatchDetailModel {
     let row: MatchRowModel
-    let goals: [GoalRowModel]
+    let timeline: [TimelineItemModel]
+    let stats: MatchStatsModel
+    let lineups: MatchLineupsModel
+}
+
+// MARK: - Detail builders
+
+extension MatchScheduleViewModel {
+    /// "90+2'" → 9002, "90'" → 9000, so stoppage-time entries order correctly.
+    static func minuteSortKey(_ minute: String) -> Int {
+        let parts = minute.replacingOccurrences(of: "'", with: "").split(separator: "+")
+        let base = Int(parts.first ?? "") ?? 0
+        let extra = parts.count > 1 ? (Int(parts[1]) ?? 0) : 0
+        return base * 100 + extra
+    }
+
+    /// Goals and non-goal events merged into one minute-ordered timeline.
+    static func timeline(
+        goals: [GoalRowModel],
+        events: [MatchEvent],
+        homeTeamID: String?,
+        teamsByID: [String: Team]
+    ) -> [TimelineItemModel] {
+        let goalItems = goals.map { TimelineItemModel(goal: $0) }
+        let eventItems = events.map { event -> TimelineItemModel in
+            let isHome = event.teamID != nil && event.teamID == homeTeamID
+            let flag = event.teamID.flatMap { teamsByID[$0]?.flag } ?? ""
+            return TimelineItemModel(event: event, isHome: isHome, flag: flag)
+        }
+        return (goalItems + eventItems).sorted { $0.sortKey < $1.sortKey }
+    }
+
+    static func statsModel(_ stats: [MatchStat], homeTeamID: String?) -> MatchStatsModel {
+        let home = stats.first { $0.teamID != nil && $0.teamID == homeTeamID }
+        let away = stats.first { $0.id != home?.id }
+        return MatchStatsModel(home: home, away: away)
+    }
+
+    static func lineupsModel(
+        _ lineups: [LineupEntry],
+        match: Match?,
+        teamsByID: [String: Team]
+    ) -> MatchLineupsModel {
+        func side(_ teamID: String?) -> TeamLineupModel {
+            let entries = lineups.filter { $0.teamID != nil && $0.teamID == teamID }
+            let team = teamID.flatMap { teamsByID[$0] }
+            return TeamLineupModel(
+                flag: team?.flag ?? "",
+                name: team?.name ?? "",
+                entries: entries
+            )
+        }
+        return MatchLineupsModel(home: side(match?.homeTeamID), away: side(match?.awayTeamID))
+    }
+}
+
+/// One entry in the merged match timeline — a goal or a card/sub/VAR event.
+struct TimelineItemModel: Identifiable {
+    let id: String
+    let minute: String
+    let sortKey: Int
+    let isHome: Bool
+    let flag: String
+    /// Non-nil for goals.
+    let goalType: GoalType?
+    /// Non-nil for non-goal events.
+    let eventType: MatchEventType?
+    /// Scorer, or the carded / substituted-off player.
+    let primary: String
+    /// Goal tag (pen/OG), or the player coming on for a substitution.
+    let secondary: String?
+
+    init(goal: GoalRowModel) {
+        id = goal.id
+        minute = goal.minute
+        sortKey = goal.sortKey
+        isHome = goal.isHome
+        flag = goal.flag
+        goalType = goal.type
+        eventType = nil
+        primary = goal.scorer
+        secondary = goal.type.shortTag
+    }
+
+    init(event: MatchEvent, isHome: Bool, flag: String) {
+        id = event.id
+        minute = event.minute
+        sortKey = MatchScheduleViewModel.minuteSortKey(event.minute)
+        self.isHome = isHome
+        self.flag = flag
+        goalType = nil
+        eventType = event.type
+        primary = event.player
+        secondary = event.player2
+    }
+}
+
+/// Per-team match statistics, as comparison rows for the detail screen.
+struct MatchStatsModel {
+    let rows: [StatComparisonRow]
+
+    init(home: MatchStat?, away: MatchStat?) {
+        var rows: [StatComparisonRow] = []
+        func percentValue(_ s: String?) -> Double? {
+            s.flatMap { Double($0.replacingOccurrences(of: "%", with: "")) }
+        }
+        rows.append(contentsOf: [
+            StatComparisonRow(title: String(localized: "Possession"),
+                              home: home?.possession, away: away?.possession,
+                              homeValue: percentValue(home?.possession),
+                              awayValue: percentValue(away?.possession)),
+            StatComparisonRow(title: String(localized: "Shots"),
+                              homeInt: home?.shotsTotal, awayInt: away?.shotsTotal),
+            StatComparisonRow(title: String(localized: "Shots on target"),
+                              homeInt: home?.shotsOnGoal, awayInt: away?.shotsOnGoal),
+            StatComparisonRow(title: String(localized: "Corners"),
+                              homeInt: home?.corners, awayInt: away?.corners),
+            StatComparisonRow(title: String(localized: "Fouls"),
+                              homeInt: home?.fouls, awayInt: away?.fouls),
+            StatComparisonRow(title: String(localized: "Passing accuracy"),
+                              home: home?.passesPercent, away: away?.passesPercent,
+                              homeValue: percentValue(home?.passesPercent),
+                              awayValue: percentValue(away?.passesPercent)),
+            StatComparisonRow(title: String(localized: "Expected goals"),
+                              home: home?.expectedGoals.map { String(format: "%.2f", $0) },
+                              away: away?.expectedGoals.map { String(format: "%.2f", $0) },
+                              homeValue: home?.expectedGoals, awayValue: away?.expectedGoals),
+        ])
+        self.rows = rows.filter { $0.hasValue }
+    }
+
+    var isEmpty: Bool { rows.isEmpty }
+}
+
+struct StatComparisonRow: Identifiable {
+    let id: String
+    let title: String
+    let home: String
+    let away: String
+    /// Home share of the total, 0...1, for the comparison bar; nil if neither
+    /// side reported a comparable number.
+    let homeFraction: Double?
+    let hasValue: Bool
+
+    init(title: String, home: String?, away: String?, homeValue: Double?, awayValue: Double?) {
+        self.id = title
+        self.title = title
+        self.home = home ?? "–"
+        self.away = away ?? "–"
+        self.hasValue = home != nil || away != nil
+        let total = (homeValue ?? 0) + (awayValue ?? 0)
+        self.homeFraction = total > 0 ? (homeValue ?? 0) / total : nil
+    }
+
+    init(title: String, homeInt: Int?, awayInt: Int?) {
+        self.init(
+            title: title,
+            home: homeInt.map { "\($0)" },
+            away: awayInt.map { "\($0)" },
+            homeValue: homeInt.map(Double.init),
+            awayValue: awayInt.map(Double.init)
+        )
+    }
+}
+
+/// Both sides' lineups for the detail screen.
+struct MatchLineupsModel {
+    let home: TeamLineupModel
+    let away: TeamLineupModel
+    var isEmpty: Bool { home.starters.isEmpty && away.starters.isEmpty }
+}
+
+struct TeamLineupModel {
+    let flag: String
+    let name: String
+    let starters: [LineupRowModel]
+    let bench: [LineupRowModel]
+
+    init(flag: String, name: String, entries: [LineupEntry]) {
+        self.flag = flag
+        self.name = name
+        func sorted(_ entries: [LineupEntry]) -> [LineupRowModel] {
+            entries
+                .sorted { lhs, rhs in
+                    let l = lhs.position?.sortOrder ?? 99
+                    let r = rhs.position?.sortOrder ?? 99
+                    if l != r { return l < r }
+                    return (lhs.number ?? .max) < (rhs.number ?? .max)
+                }
+                .map(LineupRowModel.init)
+        }
+        starters = sorted(entries.filter(\.started))
+        bench = sorted(entries.filter { !$0.started })
+    }
+}
+
+struct LineupRowModel: Identifiable {
+    let id: String
+    let number: Int?
+    let name: String
+    let positionCode: String?
+    let captain: Bool
+    let rating: String?
+    let goals: Int
+
+    init(_ entry: LineupEntry) {
+        id = entry.id
+        number = entry.number
+        name = entry.player
+        positionCode = entry.position?.shortCode
+        captain = entry.captain
+        rating = entry.rating.map { String(format: "%.1f", $0) }
+        goals = entry.goals
+    }
 }
 
 /// One goal, resolved for display: scoring side's flag, which side it's on,
