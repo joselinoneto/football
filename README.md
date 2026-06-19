@@ -78,6 +78,16 @@ works for other CI systems, or to seed a fresh local checkout:
 AIRTABLE_BASE_ID=app… AIRTABLE_TOKEN=pat… ./ci_scripts/ci_post_clone.sh
 ```
 
+**Build numbers** are set automatically. `ci_scripts/ci_pre_xcodebuild.sh` runs
+before each build and writes the build number (`CURRENT_PROJECT_VERSION`, from
+which `CFBundleVersion` is generated) from Xcode Cloud's own monotonic
+`CI_BUILD_NUMBER` — so every build is unique and increasing with **no commits**.
+The change is made only in the ephemeral CI checkout. The marketing version
+(`MARKETING_VERSION`) is left untouched — bump it by hand only when shipping a
+new version. If App Store Connect already has higher build numbers for the
+current version, set a plain (non-secret) `BUILD_NUMBER_OFFSET` env var on the
+workflow; the build number becomes `CI_BUILD_NUMBER + BUILD_NUMBER_OFFSET`.
+
 ## Tests
 
 The packages carry their own test suites:
