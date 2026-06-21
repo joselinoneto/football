@@ -1,8 +1,14 @@
 import SwiftUI
 import FootballCore
 
+enum ScheduleSection: Hashable {
+    case matches
+    case standings
+}
+
 struct MatchScheduleView: View {
     @State var viewModel: MatchScheduleViewModel
+    @State private var section: ScheduleSection = .matches
     // "-ShowAbout" is passed by screenshot automation to open the sheet
     // without UI interaction; never set in normal use.
     @State private var showingAbout = ProcessInfo.processInfo.arguments.contains("-ShowAbout")
@@ -47,8 +53,21 @@ struct MatchScheduleView: View {
             }
         case .loaded:
             VStack(spacing: 0) {
-                filterBar
-                matchList
+                Picker("Section", selection: $section) {
+                    Text("Matches").tag(ScheduleSection.matches)
+                    Text("Standings").tag(ScheduleSection.standings)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.top, Design.Spacing.medium)
+
+                switch section {
+                case .matches:
+                    filterBar
+                    matchList
+                case .standings:
+                    StandingsList(viewModel: viewModel)
+                }
             }
         }
     }
