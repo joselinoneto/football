@@ -29,10 +29,30 @@ struct MatchScheduleView: View {
                 .sheet(isPresented: $showingAbout) {
                     AboutView()
                 }
+                .sheet(isPresented: deepLinkBinding) {
+                    if let id = viewModel.deepLinkedMatchID {
+                        NavigationStack {
+                            MatchDetailView(viewModel: viewModel, matchID: id)
+                                .toolbar {
+                                    ToolbarItem(placement: .confirmationAction) {
+                                        Button("Done") { viewModel.deepLinkedMatchID = nil }
+                                    }
+                                }
+                        }
+                    }
+                }
         }
         .task {
             await viewModel.start()
         }
+    }
+
+    /// Drives the deep-link detail sheet opened from the widget / Live Activity.
+    private var deepLinkBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.deepLinkedMatchID != nil },
+            set: { if !$0 { viewModel.deepLinkedMatchID = nil } }
+        )
     }
 
     @ViewBuilder
