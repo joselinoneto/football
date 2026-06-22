@@ -2,12 +2,12 @@ import SwiftUI
 import FootballPresentation
 
 @main
-struct footballApp: App {
+struct footballWatchApp: App {
     private let dependencies = AppDependencies.live()
 
     var body: some Scene {
         WindowGroup {
-            MatchScheduleView(
+            WatchScheduleView(
                 viewModel: MatchScheduleViewModel(service: dependencies.service)
             )
         }

@@ -5,15 +5,15 @@ import FootballManager
 
 @MainActor
 @Observable
-final class MatchScheduleViewModel {
-    enum Phase: Equatable {
+public final class MatchScheduleViewModel {
+    public enum Phase: Equatable {
         case loading
         case loaded
         case failed(String)
     }
 
-    private(set) var phase: Phase = .loading
-    private(set) var days: [MatchDay] = []
+    public private(set) var phase: Phase = .loading
+    public private(set) var days: [MatchDay] = []
     /// Goal timelines keyed by match record ID, sorted by minute.
     private(set) var goalsByMatch: [String: [GoalRowModel]] = [:]
     /// Rows keyed by match record ID, for the detail screen lookup.
@@ -24,15 +24,15 @@ final class MatchScheduleViewModel {
     private(set) var eventsByMatch: [String: [MatchEvent]] = [:]
     private(set) var statsByMatch: [String: [MatchStat]] = [:]
     /// Group standings, shown in the Matches screen's Standings segment.
-    private(set) var standingsGroups: [StandingsGroup] = []
+    public private(set) var standingsGroups: [StandingsGroup] = []
     private var teamsByID: [String: Team] = [:]
     private var matchesByID: [String: Match] = [:]
     private var squadsByTeam: [String: [SquadMember]] = [:]
-    var selectedFilter: MatchFilter = .all
+    public var selectedFilter: MatchFilter = .all
 
     /// The grouped days narrowed down to the active filter, dropping any day
     /// left without matching matches.
-    var filteredDays: [MatchDay] {
+    public var filteredDays: [MatchDay] {
         switch selectedFilter {
         case .all:
             return days
@@ -47,7 +47,7 @@ final class MatchScheduleViewModel {
 
     private let service: any FootballService
 
-    init(service: any FootballService) {
+    public init(service: any FootballService) {
         self.service = service
     }
 
@@ -55,7 +55,7 @@ final class MatchScheduleViewModel {
     /// from the network on an adaptive cadence — fast while a match is live,
     /// slower otherwise. The loop ends when the owning `.task` is cancelled
     /// (i.e. the screen goes away), so there is no manual lifecycle to manage.
-    func start() async {
+    public func start() async {
         await loadFromStore()
         while !Task.isCancelled {
             await refresh()
@@ -71,10 +71,10 @@ final class MatchScheduleViewModel {
         return anyLive ? 30 : 180
     }
 
-    /// The match plus its goal timeline, resolved live from the store-backed
-    /// state. Reading the observable properties here keeps the detail screen
-    /// in sync as polling updates come in.
-    func detail(for matchID: String) -> MatchDetailModel? {
+    /// The match plus its resolved detail content, read live from the
+    /// store-backed state. Reading the observable properties here keeps the
+    /// detail screen in sync as polling updates come in.
+    public func detail(for matchID: String) -> MatchDetailModel? {
         guard let row = rowsByID[matchID] else { return nil }
         let match = matchesByID[matchID]
         return MatchDetailModel(
@@ -91,13 +91,13 @@ final class MatchScheduleViewModel {
 
     /// A team's display row, for the team detail screen reached by tapping a
     /// country name (e.g. from the standings).
-    func team(for teamID: String) -> TeamRowModel? {
+    public func team(for teamID: String) -> TeamRowModel? {
         teamsByID[teamID].map(TeamRowModel.init)
     }
 
     /// The team's roster, split into goalkeeper/defender/midfielder/attacker
     /// sections, each ordered by shirt number.
-    func squadSections(for teamID: String) -> [SquadLineSection] {
+    public func squadSections(for teamID: String) -> [SquadLineSection] {
         let members = squadsByTeam[teamID] ?? []
         return Dictionary(grouping: members, by: { $0.position })
             .map { position, members in
@@ -111,7 +111,7 @@ final class MatchScheduleViewModel {
             .sorted { $0.sortOrder < $1.sortOrder }
     }
 
-    func refresh() async {
+    public func refresh() async {
         do {
             try await service.refresh()
             await loadFromStore()
@@ -175,7 +175,7 @@ final class MatchScheduleViewModel {
     }
 
     private static var loadFailureMessage: String {
-        String(localized: "Could not load the matches. Check your connection and try again.")
+        String(localized: "Could not load the matches. Check your connection and try again.", bundle: .module)
     }
 
     // MARK: Presentation
@@ -237,67 +237,73 @@ final class MatchScheduleViewModel {
     }
 }
 
-enum MatchFilter: String, CaseIterable, Identifiable {
+public enum MatchFilter: String, CaseIterable, Identifiable {
     case all
     case today
     case upcoming
     case finished
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
-    var title: String {
+    public var title: String {
         switch self {
-        case .all: String(localized: "All")
-        case .today: String(localized: "Today")
-        case .upcoming: String(localized: "Upcoming")
-        case .finished: String(localized: "Finished")
+        case .all: String(localized: "All", bundle: .module)
+        case .today: String(localized: "Today", bundle: .module)
+        case .upcoming: String(localized: "Upcoming", bundle: .module)
+        case .finished: String(localized: "Finished", bundle: .module)
         }
     }
 }
 
-struct MatchDay: Identifiable {
-    let date: Date
-    let isToday: Bool
-    let rows: [MatchRowModel]
+public struct MatchDay: Identifiable {
+    public let date: Date
+    public let isToday: Bool
+    public let rows: [MatchRowModel]
 
-    var id: Date { date }
+    public var id: Date { date }
 
-    var title: String {
+    public var title: String {
         if isToday {
-            return String(localized: "Today")
+            return String(localized: "Today", bundle: .module)
         }
         return date.formatted(.dateTime.weekday(.wide).day().month(.wide))
     }
 
+    init(date: Date, isToday: Bool, rows: [MatchRowModel]) {
+        self.date = date
+        self.isToday = isToday
+        self.rows = rows
+    }
+
     /// Returns a copy keeping only matching rows, or nil if none remain.
-    func keepingRows(_ isIncluded: (MatchRowModel) -> Bool) -> MatchDay? {
+    public func keepingRows(_ isIncluded: (MatchRowModel) -> Bool) -> MatchDay? {
         let kept = rows.filter(isIncluded)
         return kept.isEmpty ? nil : MatchDay(date: date, isToday: isToday, rows: kept)
     }
 }
 
 /// Everything a row needs, resolved up front so the view stays dumb.
-struct MatchRowModel: Identifiable {
-    struct Side {
+public struct MatchRowModel: Identifiable {
+    public struct Side {
         /// Linked Team record ID; nil when the team isn't decided yet. Lets the
         /// detail screen turn the team name into a link to its squad.
-        let teamID: String?
-        let flag: String
-        let name: String
-        let score: Int?
+        public let teamID: String?
+        public let flag: String
+        public let name: String
+        public let score: Int?
     }
 
-    let id: String
-    let kickoff: Date
-    let stage: Stage
-    let venue: String
-    let status: MatchStatus
+    public let id: String
+    public let kickoff: Date
+    public let stage: Stage
+    public let venue: String
+    public let status: MatchStatus
     /// Live match clock, e.g. "67'"; only meaningful while `status == .live`.
-    let minute: String?
-    let home: Side
-    let away: Side
+    public let minute: String?
+    public let home: Side
+    public let away: Side
 
-    init(match: Match, teamsByID: [String: Team]) {
+    public init(match: Match, teamsByID: [String: Team]) {
         id = match.id
         kickoff = match.kickoff
         stage = match.stage
@@ -318,11 +324,11 @@ struct MatchRowModel: Identifiable {
         )
     }
 
-    var detail: String {
+    public var detail: String {
         stage == .group ? venue : "\(stage.displayName) · \(venue)"
     }
 
-    var showsScore: Bool { status != .scheduled }
+    public var showsScore: Bool { status != .scheduled }
 }
 
 extension MatchRowModel.Side {
@@ -334,7 +340,7 @@ extension MatchRowModel.Side {
             self.init(
                 teamID: nil,
                 flag: "",
-                name: fallbackName ?? String(localized: "To be decided"),
+                name: fallbackName ?? String(localized: "To be decided", bundle: .module),
                 score: score
             )
         }
@@ -342,17 +348,18 @@ extension MatchRowModel.Side {
 }
 
 /// A match paired with its resolved detail content, for the detail screen.
-struct MatchDetailModel {
-    let row: MatchRowModel
-    let timeline: [TimelineItemModel]
-    let stats: MatchStatsModel
+public struct MatchDetailModel {
+    public let row: MatchRowModel
+    public let timeline: [TimelineItemModel]
+    public let stats: MatchStatsModel
 }
 
 // MARK: - Detail builders
 
 extension MatchScheduleViewModel {
     /// "90+2'" → 9002, "90'" → 9000, so stoppage-time entries order correctly.
-    static func minuteSortKey(_ minute: String) -> Int {
+    /// `nonisolated` so the (nonisolated) `TimelineItemModel.init` can call it.
+    nonisolated static func minuteSortKey(_ minute: String) -> Int {
         let parts = minute.replacingOccurrences(of: "'", with: "").split(separator: "+")
         let base = Int(parts.first ?? "") ?? 0
         let extra = parts.count > 1 ? (Int(parts[1]) ?? 0) : 0
@@ -383,20 +390,20 @@ extension MatchScheduleViewModel {
 }
 
 /// One entry in the merged match timeline — a goal or a card/sub/VAR event.
-struct TimelineItemModel: Identifiable {
-    let id: String
-    let minute: String
+public struct TimelineItemModel: Identifiable {
+    public let id: String
+    public let minute: String
     let sortKey: Int
-    let isHome: Bool
-    let flag: String
+    public let isHome: Bool
+    public let flag: String
     /// Non-nil for goals.
-    let goalType: GoalType?
+    public let goalType: GoalType?
     /// Non-nil for non-goal events.
-    let eventType: MatchEventType?
+    public let eventType: MatchEventType?
     /// Scorer, or the carded / substituted-off player.
-    let primary: String
+    public let primary: String
     /// Goal tag (pen/OG), or the player coming on for a substitution.
-    let secondary: String?
+    public let secondary: String?
 
     init(goal: GoalRowModel) {
         id = goal.id
@@ -424,8 +431,8 @@ struct TimelineItemModel: Identifiable {
 }
 
 /// Per-team match statistics, as comparison rows for the detail screen.
-struct MatchStatsModel {
-    let rows: [StatComparisonRow]
+public struct MatchStatsModel {
+    public let rows: [StatComparisonRow]
 
     init(home: MatchStat?, away: MatchStat?) {
         var rows: [StatComparisonRow] = []
@@ -433,23 +440,23 @@ struct MatchStatsModel {
             s.flatMap { Double($0.replacingOccurrences(of: "%", with: "")) }
         }
         rows.append(contentsOf: [
-            StatComparisonRow(title: String(localized: "Possession"),
+            StatComparisonRow(title: String(localized: "Possession", bundle: .module),
                               home: home?.possession, away: away?.possession,
                               homeValue: percentValue(home?.possession),
                               awayValue: percentValue(away?.possession)),
-            StatComparisonRow(title: String(localized: "Shots"),
+            StatComparisonRow(title: String(localized: "Shots", bundle: .module),
                               homeInt: home?.shotsTotal, awayInt: away?.shotsTotal),
-            StatComparisonRow(title: String(localized: "Shots on target"),
+            StatComparisonRow(title: String(localized: "Shots on target", bundle: .module),
                               homeInt: home?.shotsOnGoal, awayInt: away?.shotsOnGoal),
-            StatComparisonRow(title: String(localized: "Corners"),
+            StatComparisonRow(title: String(localized: "Corners", bundle: .module),
                               homeInt: home?.corners, awayInt: away?.corners),
-            StatComparisonRow(title: String(localized: "Fouls"),
+            StatComparisonRow(title: String(localized: "Fouls", bundle: .module),
                               homeInt: home?.fouls, awayInt: away?.fouls),
-            StatComparisonRow(title: String(localized: "Passing accuracy"),
+            StatComparisonRow(title: String(localized: "Passing accuracy", bundle: .module),
                               home: home?.passesPercent, away: away?.passesPercent,
                               homeValue: percentValue(home?.passesPercent),
                               awayValue: percentValue(away?.passesPercent)),
-            StatComparisonRow(title: String(localized: "Expected goals"),
+            StatComparisonRow(title: String(localized: "Expected goals", bundle: .module),
                               home: home?.expectedGoals.map { String(format: "%.2f", $0) },
                               away: away?.expectedGoals.map { String(format: "%.2f", $0) },
                               homeValue: home?.expectedGoals, awayValue: away?.expectedGoals),
@@ -457,17 +464,17 @@ struct MatchStatsModel {
         self.rows = rows.filter { $0.hasValue }
     }
 
-    var isEmpty: Bool { rows.isEmpty }
+    public var isEmpty: Bool { rows.isEmpty }
 }
 
-struct StatComparisonRow: Identifiable {
-    let id: String
-    let title: String
-    let home: String
-    let away: String
+public struct StatComparisonRow: Identifiable {
+    public let id: String
+    public let title: String
+    public let home: String
+    public let away: String
     /// Home share of the total, 0...1, for the comparison bar; nil if neither
     /// side reported a comparable number.
-    let homeFraction: Double?
+    public let homeFraction: Double?
     let hasValue: Bool
 
     init(title: String, home: String?, away: String?, homeValue: Double?, awayValue: Double?) {
@@ -493,14 +500,14 @@ struct StatComparisonRow: Identifiable {
 
 /// One goal, resolved for display: scoring side's flag, which side it's on,
 /// and a numeric key so "90+2'" sorts after "90'".
-struct GoalRowModel: Identifiable {
-    let id: String
-    let minute: String
+public struct GoalRowModel: Identifiable {
+    public let id: String
+    public let minute: String
     let sortKey: Int
-    let scorer: String
-    let type: GoalType
-    let flag: String
-    let isHome: Bool
+    public let scorer: String
+    public let type: GoalType
+    public let flag: String
+    public let isHome: Bool
 
     init(goal: Goal, flag: String, isHome: Bool) {
         id = goal.id
@@ -523,39 +530,39 @@ struct GoalRowModel: Identifiable {
 
 // MARK: - Standings presentation
 
-struct StandingsGroup: Identifiable {
-    let name: String
-    let rows: [StandingRowModel]
+public struct StandingsGroup: Identifiable {
+    public let name: String
+    public let rows: [StandingRowModel]
 
-    var id: String { name }
+    public var id: String { name }
 
     /// The pooled third-placed ranking sorts last and is labelled differently.
-    var isThirdPlaceRanking: Bool { name == "Group Stage" }
+    public var isThirdPlaceRanking: Bool { name == "Group Stage" }
     var sortKey: String { isThirdPlaceRanking ? "ZZZ" : name }
 
-    var title: String {
+    public var title: String {
         if isThirdPlaceRanking {
-            return String(localized: "Third-placed teams")
+            return String(localized: "Third-placed teams", bundle: .module)
         }
         if name.hasPrefix("Group "), let letter = name.split(separator: " ").last {
-            return String(localized: "Group \(String(letter))")
+            return String(localized: "Group \(String(letter))", bundle: .module)
         }
         return name
     }
 }
 
 /// One standings row, resolved for display.
-struct StandingRowModel: Identifiable {
-    let id: String
-    let rank: Int
-    let teamID: String?
-    let flag: String
-    let name: String
-    let played: Int
-    let goalDifference: Int
-    let points: Int
-    let form: String
-    let qualification: String?
+public struct StandingRowModel: Identifiable {
+    public let id: String
+    public let rank: Int
+    public let teamID: String?
+    public let flag: String
+    public let name: String
+    public let played: Int
+    public let goalDifference: Int
+    public let points: Int
+    public let form: String
+    public let qualification: String?
 
     init(standing: Standing, team: Team?) {
         id = standing.id
@@ -570,10 +577,10 @@ struct StandingRowModel: Identifiable {
         qualification = standing.qualification
     }
 
-    var qualifies: Bool { qualification != nil }
+    public var qualifies: Bool { qualification != nil }
 
     /// Localized qualification label; reuses the stage names where they match.
-    var qualificationLabel: String? {
+    public var qualificationLabel: String? {
         guard let qualification else { return nil }
         return Stage(rawValue: qualification)?.displayName ?? qualification
     }
@@ -581,12 +588,12 @@ struct StandingRowModel: Identifiable {
 
 // MARK: - Team / squad presentation
 
-struct TeamRowModel: Identifiable {
-    let id: String
-    let name: String
-    let code: String
-    let flag: String
-    let group: String
+public struct TeamRowModel: Identifiable {
+    public let id: String
+    public let name: String
+    public let code: String
+    public let flag: String
+    public let group: String
 
     init(_ team: Team) {
         id = team.id
@@ -597,20 +604,20 @@ struct TeamRowModel: Identifiable {
     }
 }
 
-struct SquadLineSection: Identifiable {
-    let position: PlayerPosition?
-    let members: [SquadRowModel]
+public struct SquadLineSection: Identifiable {
+    public let position: PlayerPosition?
+    public let members: [SquadRowModel]
 
-    var id: String { position?.rawValue ?? "other" }
+    public var id: String { position?.rawValue ?? "other" }
     var sortOrder: Int { position?.sortOrder ?? 99 }
-    var title: String { position?.displayName ?? String(localized: "Squad") }
+    public var title: String { position?.displayName ?? String(localized: "Squad", bundle: .module) }
 }
 
-struct SquadRowModel: Identifiable {
-    let id: String
-    let number: Int?
-    let name: String
-    let age: Int?
+public struct SquadRowModel: Identifiable {
+    public let id: String
+    public let number: Int?
+    public let name: String
+    public let age: Int?
 
     init(_ member: SquadMember) {
         id = member.id

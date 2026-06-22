@@ -1,5 +1,6 @@
 import SwiftUI
 import FootballCore
+import FootballPresentation
 
 /// Match detail: a scoreboard, the live goal/event timeline, team statistics,
 /// and lineups. Reads its model from the schedule view model by ID, so polling

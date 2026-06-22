@@ -2,26 +2,9 @@ import SwiftUI
 import FootballCore
 
 extension MatchEventType {
-    /// Full, user-facing, localized event name.
-    var displayName: String {
-        switch self {
-        case .yellowCard: String(localized: "event.yellowCard", defaultValue: "Yellow card")
-        case .redCard: String(localized: "event.redCard", defaultValue: "Red card")
-        case .substitution: String(localized: "event.substitution", defaultValue: "Substitution")
-        case .videoReview: String(localized: "event.var", defaultValue: "VAR")
-        }
-    }
-
-    /// SF Symbol that represents the event in the timeline.
-    var symbolName: String {
-        switch self {
-        case .yellowCard, .redCard: "rectangle.portrait.fill"
-        case .substitution: "arrow.left.arrow.right"
-        case .videoReview: "tv"
-        }
-    }
-
-    /// Tint for the event glyph.
+    /// Tint for the event glyph. Lives in the app target because it depends on
+    /// the brand colors in `Theme.swift`; the textual `displayName` /
+    /// `symbolName` live in `FootballPresentation`.
     var tint: Color {
         switch self {
         case .yellowCard: Color.yellow

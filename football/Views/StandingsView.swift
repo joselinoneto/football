@@ -1,5 +1,6 @@
 import SwiftUI
 import FootballCore
+import FootballPresentation
 
 /// Standings shown as the "Standings" segment inside the schedule screen.
 /// Each group is a custom rounded card so the first and last team rows get the

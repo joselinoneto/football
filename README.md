@@ -58,9 +58,11 @@ Requires Xcode with the iOS 26 SDK.
 
 ### Continuous integration (Xcode Cloud)
 
-`Secrets.swift` is git-ignored, so CI has to supply the credentials another way.
-`ci_scripts/ci_post_clone.sh` regenerates it at build time from two **secret**
-environment variables. Set them on the Xcode Cloud workflow (App Store Connect →
+Both app targets (iOS and watchOS) read their credentials from a git-ignored
+`Secrets.swift` (`football/Support/` and `footballWatch/Support/`), so CI has to
+supply them another way. `ci_scripts/ci_post_clone.sh` regenerates **both** files
+at build time from two **secret** environment variables. Set them on the Xcode
+Cloud workflow (App Store Connect →
 Xcode Cloud → your workflow → **Environment**), ticking **Secret** so they're
 encrypted and kept out of the build logs:
 

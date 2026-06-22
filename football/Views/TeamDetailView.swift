@@ -1,5 +1,6 @@
 import SwiftUI
 import FootballCore
+import FootballPresentation
 
 /// A team's roster, grouped by line. Reached by tapping a country name (e.g.
 /// from the standings); reads from the shared view model by ID so it reflects

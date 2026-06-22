@@ -3,10 +3,12 @@ import FootballCore
 import FootballManager
 
 /// In-memory stand-in for SwiftUI previews — no network, no SwiftData.
-final class PreviewFootballService: FootballService {
-    func refresh() async throws {}
+public final class PreviewFootballService: FootballService {
+    public init() {}
 
-    func teams() async throws -> [Team] {
+    public func refresh() async throws {}
+
+    public func teams() async throws -> [Team] {
         [
             Team(id: "recMEX", name: "Mexico", code: "MEX", group: "A", flag: "🇲🇽"),
             Team(id: "recRSA", name: "South Africa", code: "RSA", group: "A", flag: "🇿🇦"),
@@ -15,7 +17,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func matches() async throws -> [Match] {
+    public func matches() async throws -> [Match] {
         let now = Date()
         return [
             Match(
@@ -42,7 +44,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func goals() async throws -> [Goal] {
+    public func goals() async throws -> [Goal] {
         [
             Goal(id: "recG1", matchNumber: 1, matchID: "recM1", teamID: "recMEX",
                  scorer: "H. Lozano", minute: "12'", type: .goal),
@@ -59,7 +61,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func standings() async throws -> [Standing] {
+    public func standings() async throws -> [Standing] {
         [
             Standing(id: "recS1", group: "Group A", rank: 1, teamID: "recMEX",
                      played: 1, win: 1, draw: 0, loss: 0, goalsFor: 2, goalsAgainst: 1,
@@ -70,7 +72,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func matchStats() async throws -> [MatchStat] {
+    public func matchStats() async throws -> [MatchStat] {
         [
             MatchStat(id: "recST1", matchNumber: 1, matchID: "recM1", teamID: "recMEX",
                       possession: "58%", shotsTotal: 14, shotsOnGoal: 6, shotsOffGoal: 5,
@@ -87,9 +89,9 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func lineups() async throws -> [LineupEntry] { [] }
+    public func lineups() async throws -> [LineupEntry] { [] }
 
-    func topScorers() async throws -> [TopScorer] {
+    public func topScorers() async throws -> [TopScorer] {
         [
             TopScorer(id: "recTS1", rank: 1, player: "S. Giménez", teamID: "recMEX",
                       goals: 3, assists: 1, penalties: 0, minutes: 270, photoURL: nil),
@@ -98,7 +100,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func matchEvents() async throws -> [MatchEvent] {
+    public func matchEvents() async throws -> [MatchEvent] {
         [
             MatchEvent(id: "recE1", matchNumber: 1, matchID: "recM1", teamID: "recRSA",
                        type: .yellowCard, player: "T. Mokoena", player2: nil,
@@ -109,7 +111,7 @@ final class PreviewFootballService: FootballService {
         ]
     }
 
-    func squads() async throws -> [SquadMember] { [] }
+    public func squads() async throws -> [SquadMember] { [] }
 
-    func venues() async throws -> [Venue] { [] }
+    public func venues() async throws -> [Venue] { [] }
 }
