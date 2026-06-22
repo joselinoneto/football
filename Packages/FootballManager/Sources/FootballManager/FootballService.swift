@@ -4,6 +4,10 @@ import FootballCore
 /// pulls from the network and updates the store.
 public protocol FootballService: Sendable {
     func refresh() async throws
+    /// A focused refresh of just Teams and Matches — enough to show scores,
+    /// status, and the match clock. Used by the Home Screen widget, where the
+    /// full `refresh()` (ten tables) is too heavy for the timeline budget.
+    func refreshScores() async throws
     func teams() async throws -> [Team]
     func matches() async throws -> [Match]
     func goals() async throws -> [Goal]

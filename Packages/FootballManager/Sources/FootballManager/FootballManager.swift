@@ -39,6 +39,13 @@ public final class FootballManager: FootballService {
         try await store.replaceVenues(venues)
     }
 
+    public func refreshScores() async throws {
+        async let teams = api.fetchTeams(locale: locale)
+        async let matches = api.fetchMatches(locale: locale)
+        try await store.replaceTeams(teams)
+        try await store.replaceMatches(matches)
+    }
+
     public func teams() async throws -> [Team] {
         try await store.teams()
     }
