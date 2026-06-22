@@ -19,6 +19,8 @@ No ads. No accounts. No tracking. Just football.
 - Tap any match for its goal-by-goal timeline: scorer, minute, and penalty/own-goal markers
 - Every stage clearly labelled, from the group phase to the final, with venues
 - Works offline — the schedule lives on your device and refreshes when you open the app
+- **Home Screen widgets** in three sizes showing today's games — flag, country code, and score per team — that update when you open the app and refresh on their own. Pick a team to follow, or leave it on today's fixtures.
+- **Live Activities** on the Lock Screen and Dynamic Island that track a match in play, with the live score and match clock
 - Localized in English and Brazilian Portuguese
 
 ## The manifesto
@@ -40,6 +42,8 @@ Packages/
 
 Data flows one way: `FootballAPI` fetches public tournament data over HTTPS, `FootballManager` syncs it into `FootballStorage`, and the UI reads from the local store — which is why the app works offline.
 
+The **Home Screen widget** (`footballWidget`, a WidgetKit app extension) reads the same data through an App Group (`group.app.zeneto.football`): the iOS app stores its SwiftData copy in the shared group container, and the widget reads it — plus does its own lightweight Teams/Matches refresh on its timeline so it stays current even when the app is closed. The app reloads the widget and updates any **Live Activity** after each sync. The Watch app keeps its own private store.
+
 UI strings are localized with String Catalogs (en, pt-BR); match and team names come localized from the data source, falling back to English.
 
 ## Building
@@ -54,14 +58,16 @@ Requires Xcode with the iOS 26 SDK.
    ```
 
    Then fill in your Airtable base ID and a personal access token with the read-only `data.records:read` scope.
-3. Build and run. SwiftUI previews render against bundled sample data (`PreviewFootballService`) with no credentials, but the **app target** needs `Secrets.swift` to compile — it defines `AirtableConfiguration.current`, which `AppDependencies` reads.
+   The widget target needs the same file at `footballWidget/Support/Secrets.swift` (a `Secrets.swift.sample` is provided there too). Running `ci_scripts/ci_post_clone.sh` with the two environment variables set generates all three at once.
+3. Build and run. SwiftUI previews render against bundled sample data (`PreviewFootballService`) with no credentials, but the **app and widget targets** need `Secrets.swift` to compile — it defines `AirtableConfiguration.current`, which `AppDependencies` / `WidgetDependencies` read.
 
 ### Continuous integration (Xcode Cloud)
 
-Both app targets (iOS and watchOS) read their credentials from a git-ignored
-`Secrets.swift` (`football/Support/` and `footballWatch/Support/`), so CI has to
-supply them another way. `ci_scripts/ci_post_clone.sh` regenerates **both** files
-at build time from two **secret** environment variables. Set them on the Xcode
+The iOS app, the Watch app, and the widget extension each read their credentials
+from a git-ignored `Secrets.swift` (`football/Support/`, `footballWatch/Support/`,
+and `footballWidget/Support/`), so CI has to supply them another way.
+`ci_scripts/ci_post_clone.sh` regenerates **all three** files at build time from
+two **secret** environment variables. Set them on the Xcode
 Cloud workflow (App Store Connect →
 Xcode Cloud → your workflow → **Environment**), ticking **Secret** so they're
 encrypted and kept out of the build logs:
