@@ -89,6 +89,9 @@ struct MatchEntry: TimelineEntry {
     /// Header title that goes with `primaryMatch` — its day ("Today"/weekday) or
     /// the followed team's name.
     let primaryTitle: String
+    /// True when configured to follow one team — the medium/large widgets then
+    /// show that team's recent results plus its upcoming games, not a day's list.
+    let followsTeam: Bool
 
     /// The primary day's matches, for the medium widget.
     var matches: [WidgetMatch] { days.first?.matches ?? [] }
@@ -99,7 +102,7 @@ struct MatchEntry: TimelineEntry {
 struct WidgetMatchProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> MatchEntry {
         MatchEntry(date: Date(), title: Self.todayTitle, days: [], hasLive: false,
-                   primaryMatch: nil, primaryTitle: Self.todayTitle)
+                   primaryMatch: nil, primaryTitle: Self.todayTitle, followsTeam: false)
     }
 
     func snapshot(for configuration: SelectTeamIntent, in context: Context) async -> MatchEntry {
@@ -132,18 +135,22 @@ extension WidgetMatchProvider {
         let now = Date()
         let calendar = Calendar.current
 
-        // Configured for a specific team: show its most relevant match.
+        // Configured for a specific team: the medium/large widgets show its
+        // recent results then upcoming games; the small widget shows the single
+        // most relevant match (live/next).
         if let team = configuration.team {
             let forTeam = all.filter { $0.teamIDs.contains(team.id) }
+            let timeline = teamTimeline(forTeam, now: now)
             let pick = relevantMatch(forTeam, now: now)
             let title = "\(team.flag) \(team.name)"
             let day = WidgetDay(
                 date: calendar.startOfDay(for: pick?.kickoff ?? now),
                 title: title,
-                matches: pick.map { [$0] } ?? []
+                matches: timeline
             )
-            return MatchEntry(date: now, title: title, days: [day], hasLive: pick?.status == .live,
-                              primaryMatch: pick, primaryTitle: title)
+            return MatchEntry(date: now, title: title, days: [day],
+                              hasLive: timeline.contains { $0.status == .live },
+                              primaryMatch: pick, primaryTitle: title, followsTeam: true)
         }
 
         // Default: today's games first, then upcoming days (so the large widget
@@ -159,8 +166,18 @@ extension WidgetMatchProvider {
             days: days,
             hasLive: days.first?.hasLive ?? false,
             primaryMatch: primary,
-            primaryTitle: primaryTitle
+            primaryTitle: primaryTitle,
+            followsTeam: false
         )
+    }
+
+    /// A followed team's timeline: its last 3 results, then any live game, then
+    /// upcoming fixtures in kickoff order. The widgets window this to fit.
+    static func teamTimeline(_ matches: [WidgetMatch], now: Date) -> [WidgetMatch] {
+        let sorted = matches.sorted { $0.kickoff < $1.kickoff }
+        let recent = sorted.filter { $0.status == .finished }.suffix(3)
+        let liveAndUpcoming = sorted.filter { $0.status != .finished }
+        return Array(recent) + liveAndUpcoming
     }
 
     /// "Today" when the date is today, otherwise a weekday/date label.
@@ -187,6 +204,16 @@ extension WidgetMatchProvider {
             }
         }
         return days
+    }
+
+    /// Picks a `limit`-sized window over an ordered timeline that keeps the
+    /// next (first non-finished) match in view, backfilling with the most
+    /// recent results before it.
+    static func window(_ matches: [WidgetMatch], limit: Int) -> [WidgetMatch] {
+        guard matches.count > limit else { return matches }
+        let boundary = matches.firstIndex { $0.status != .finished } ?? matches.count
+        let start = min(max(0, boundary - (limit - 1)), matches.count - limit)
+        return Array(matches[start ..< start + limit])
     }
 
     /// Live > next scheduled > most recent finished.

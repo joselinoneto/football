@@ -135,6 +135,15 @@ private struct SmallMatchView: View {
 
 private struct MediumMatchView: View {
     let entry: MatchEntry
+    private let limit = 3
+
+    /// Following a team: a window of recent results + the next match. Otherwise
+    /// the day's first matches, with a "+N more" tail.
+    private var rows: [WidgetMatch] {
+        entry.followsTeam
+            ? WidgetMatchProvider.window(entry.matches, limit: limit)
+            : Array(entry.matches.prefix(limit))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Design.Spacing.small) {
@@ -142,13 +151,13 @@ private struct MediumMatchView: View {
             if entry.matches.isEmpty {
                 WidgetEmpty()
             } else {
-                ForEach(entry.matches.prefix(3)) { match in
+                ForEach(rows) { match in
                     Link(destination: MatchDeepLink.url(matchID: match.id)) {
                         WidgetMatchRow(match: match)
                     }
                 }
-                if entry.matches.count > 3 {
-                    Text("+\(entry.matches.count - 3) more")
+                if !entry.followsTeam, entry.matches.count > limit {
+                    Text("+\(entry.matches.count - limit) more")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
