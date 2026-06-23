@@ -248,13 +248,25 @@ public final class MatchScheduleViewModel {
                 MatchDay(
                     date: date,
                     isToday: date == today,
-                    rows: rows.sorted { $0.kickoff < $1.kickoff }
+                    // Live matches float to the top of their day; the rest stay
+                    // in kickoff order.
+                    rows: rows.sorted { lhs, rhs in
+                        let lhsLive = lhs.status == .live
+                        let rhsLive = rhs.status == .live
+                        if lhsLive != rhsLive { return lhsLive }
+                        return lhs.kickoff < rhs.kickoff
+                    }
                 )
             }
-            // Today's matches pinned to the top, every other day in date order.
+            // Today pinned to the top, then completed days latest-first, with
+            // upcoming days after in soonest-first order.
             .sorted { lhs, rhs in
                 if lhs.isToday != rhs.isToday { return lhs.isToday }
-                return lhs.date < rhs.date
+                let lhsPast = lhs.date < today
+                let rhsPast = rhs.date < today
+                if lhsPast != rhsPast { return lhsPast }
+                // Completed days descending (latest first); upcoming ascending.
+                return lhsPast ? lhs.date > rhs.date : lhs.date < rhs.date
             }
     }
 }
