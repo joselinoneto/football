@@ -78,14 +78,12 @@ private struct WidgetEmpty: View {
 private struct SmallMatchView: View {
     let entry: MatchEntry
 
-    private var match: WidgetMatch? {
-        entry.matches.first { $0.status == .live } ?? entry.matches.first
-    }
+    private var match: WidgetMatch? { entry.primaryMatch }
 
     var body: some View {
         if let match {
             VStack(alignment: .leading, spacing: Design.Spacing.small) {
-                WidgetHeader(title: entry.title, hasLive: match.status == .live)
+                WidgetHeader(title: entry.primaryTitle, hasLive: match.status == .live)
                 Spacer(minLength: 0)
                 bigTeamLine(match.home, opponentScore: match.away.score, status: match.status)
                 bigTeamLine(match.away, opponentScore: match.home.score, status: match.status)
@@ -126,7 +124,10 @@ private struct SmallMatchView: View {
     }
 
     private func stageLabel(_ match: WidgetMatch) -> String {
-        match.stage == .group ? String(localized: "Group") : match.stage.displayName
+        guard match.stage == .group else { return match.stage.displayName }
+        // "Group A" / "Grupo A" — append the letter when the teams are known.
+        let group = String(localized: "Group")
+        return match.group.map { "\(group) \($0)" } ?? group
     }
 }
 

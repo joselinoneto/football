@@ -34,6 +34,8 @@ struct WidgetMatch: Identifiable {
     let minute: String?
     let home: WidgetSide
     let away: WidgetSide
+    /// Group letter (A–L) for group-stage matches; nil for knockout games.
+    let group: String?
 
     init(match: Match, teamsByID: [String: Team]) {
         id = match.id
@@ -42,6 +44,14 @@ struct WidgetMatch: Identifiable {
         venue = match.venue
         status = match.status
         minute = match.minute
+        // Both sides of a group game share a group letter; take it from
+        // whichever team is already decided.
+        group = match.stage == .group
+            ? [match.homeTeamID, match.awayTeamID]
+                .compactMap { $0 }
+                .compactMap { teamsByID[$0]?.group }
+                .first
+            : nil
         home = WidgetSide(teamID: match.homeTeamID, score: match.homeScore,
                           fallback: match.titleSides?.home, teamsByID: teamsByID)
         away = WidgetSide(teamID: match.awayTeamID, score: match.awayScore,
@@ -73,8 +83,14 @@ struct MatchEntry: TimelineEntry {
     /// widget fills its space across days.
     let days: [WidgetDay]
     let hasLive: Bool
+    /// The single most relevant match for the small widget: live now, else the
+    /// next scheduled game (today or a future day), else the latest finished.
+    let primaryMatch: WidgetMatch?
+    /// Header title that goes with `primaryMatch` — its day ("Today"/weekday) or
+    /// the followed team's name.
+    let primaryTitle: String
 
-    /// The primary day's matches, for the small and medium widgets.
+    /// The primary day's matches, for the medium widget.
     var matches: [WidgetMatch] { days.first?.matches ?? [] }
 }
 
@@ -82,7 +98,8 @@ struct MatchEntry: TimelineEntry {
 
 struct WidgetMatchProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> MatchEntry {
-        MatchEntry(date: Date(), title: Self.todayTitle, days: [], hasLive: false)
+        MatchEntry(date: Date(), title: Self.todayTitle, days: [], hasLive: false,
+                   primaryMatch: nil, primaryTitle: Self.todayTitle)
     }
 
     func snapshot(for configuration: SelectTeamIntent, in context: Context) async -> MatchEntry {
@@ -125,18 +142,30 @@ extension WidgetMatchProvider {
                 title: title,
                 matches: pick.map { [$0] } ?? []
             )
-            return MatchEntry(date: now, title: title, days: [day], hasLive: pick?.status == .live)
+            return MatchEntry(date: now, title: title, days: [day], hasLive: pick?.status == .live,
+                              primaryMatch: pick, primaryTitle: title)
         }
 
         // Default: today's games first, then upcoming days (so the large widget
         // can show what's coming next once today's list runs out).
         let days = upcomingDays(all, now: now, calendar: calendar)
+        // The small widget tracks one match across all days, so it follows the
+        // live or next-scheduled game rather than sticking on today's opener.
+        let primary = relevantMatch(all, now: now)
+        let primaryTitle = primary.map { dayHeader(for: $0.kickoff, now: now, calendar: calendar) } ?? todayTitle
         return MatchEntry(
             date: now,
             title: days.first?.title ?? todayTitle,
             days: days,
-            hasLive: days.first?.hasLive ?? false
+            hasLive: days.first?.hasLive ?? false,
+            primaryMatch: primary,
+            primaryTitle: primaryTitle
         )
+    }
+
+    /// "Today" when the date is today, otherwise a weekday/date label.
+    static func dayHeader(for date: Date, now: Date, calendar: Calendar) -> String {
+        calendar.isDate(date, inSameDayAs: now) ? todayTitle : dayTitle(date)
     }
 
     /// Groups today-or-later matches into days in chronological order. The day
