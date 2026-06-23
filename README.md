@@ -116,6 +116,10 @@ swift test --package-path Packages/FootballStorage
 
 The app collects nothing. No analytics, no tracking, no third-party SDKs — it only downloads public tournament data and caches it on the device.
 
+## Changelog
+
+See [`docs/CHANGELOG.md`](docs/CHANGELOG.md) for what's new in each release.
+
 ## Support
 
 Questions or problems? See the [support page](https://joselinoneto.github.io/football/) or open an issue.
