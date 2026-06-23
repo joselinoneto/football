@@ -10,17 +10,24 @@ No ads. No accounts. No tracking. Just football.
 |---|---|---|
 | ![Schedule](docs/screenshots/en/iphone/01-schedule.png) | ![About](docs/screenshots/en/iphone/02-about.png) | ![Dark mode](docs/screenshots/en/iphone/03-schedule-dark.png) |
 
+| Home Screen widgets | Apple Watch |
+|---|---|
+| ![Widgets](docs/screenshots/en/widget/01-home.png) | ![Watch](docs/screenshots/en/watch/01-schedule.png) |
+
 ## Features
 
-- Every match, grouped by day and sorted by kickoff
+- Every match, grouped by day — live games float to the top, today is pinned, and completed days read latest-first
 - Kickoff times shown in your time zone
 - Live matches flagged the moment they start, with the running match clock, and final scores as soon as the whistle blows
 - Live scores and goals refresh on their own while a match is in play — no need to pull
 - Tap any match for its goal-by-goal timeline: scorer, minute, and penalty/own-goal markers
 - Every stage clearly labelled, from the group phase to the final, with venues
 - Works offline — the schedule lives on your device and refreshes when you open the app
-- **Home Screen widgets** in three sizes showing today's games — flag, country code, and score per team — that update when you open the app and refresh on their own. Pick a team to follow, or leave it on today's fixtures.
-- **Live Activities** on the Lock Screen and Dynamic Island that track a match in play, with the live score and match clock
+- **Home Screen widgets** in three sizes — flag, country code, and score per team. The small widget follows the match that matters now (live, else the next one up); the medium and large show today's fixtures, or a team you follow with its last results and upcoming games. Group-stage matches show the group letter. They refresh on their own and update when you open the app.
+- **Live Activities** on the Lock Screen and Dynamic Island that track a match in play, with the live score and match clock — both teams shown in the compact island, and never stacking duplicate cards
+- **Tap to open** — tapping a widget or Live Activity jumps straight to that match's detail
+- **Background refresh** keeps widgets and Live Activities current even while the app is closed
+- A **Liquid Glass** interface — section switcher and filter chips that feel at home on iOS 26
 - Localized in English and Brazilian Portuguese
 
 ## The manifesto

@@ -3,6 +3,8 @@ xcuserdata/
 *.xcuserstate
 .build/
 .swiftpm/
+build-screens/
+build-watch-screens/
 football/Support/Secrets.swift
 footballWatch/Support/Secrets.swift
 footballWidget/Support/Secrets.swift
