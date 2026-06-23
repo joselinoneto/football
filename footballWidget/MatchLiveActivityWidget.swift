@@ -36,11 +36,17 @@ struct MatchLiveActivityWidget: Widget {
                         .lineLimit(1)
                 }
             } compactLeading: {
-                Text(context.attributes.homeFlag.isEmpty ? "⚽️" : context.attributes.homeFlag)
+                // [flag][score] for the home side.
+                HStack(spacing: Design.Spacing.xxSmall) {
+                    Text(context.attributes.homeFlag.isEmpty ? "⚽️" : context.attributes.homeFlag)
+                    Self.compactScore(context.state.homeScore)
+                }
             } compactTrailing: {
-                Text(Self.scoreText(context.state))
-                    .font(.caption2.weight(.bold).monospacedDigit())
-                    .foregroundStyle(Color.live)
+                // [score][flag] for the away side.
+                HStack(spacing: Design.Spacing.xxSmall) {
+                    Self.compactScore(context.state.awayScore)
+                    Text(context.attributes.awayFlag.isEmpty ? "⚽️" : context.attributes.awayFlag)
+                }
             } minimal: {
                 Text(Self.scoreText(context.state))
                     .font(.caption2.weight(.bold).monospacedDigit())
@@ -58,6 +64,13 @@ struct MatchLiveActivityWidget: Widget {
             Text(code).font(.headline)
             Text("\(score ?? 0)").font(.title3.monospacedDigit().weight(.bold))
         }
+    }
+
+    /// A single side's score, styled for the compact Dynamic Island.
+    private static func compactScore(_ score: Int?) -> some View {
+        Text("\(score ?? 0)")
+            .font(.caption2.weight(.bold).monospacedDigit())
+            .foregroundStyle(Color.live)
     }
 
     static func scoreText(_ state: MatchActivityAttributes.ContentState) -> String {

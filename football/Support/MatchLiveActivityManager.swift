@@ -16,6 +16,12 @@ final class MatchLiveActivityManager {
 
     /// Reconcile running activities against the live matches in `days`.
     func sync(days: [MatchDay]) {
+        // A fresh launch or background-refresh process starts with an empty map
+        // even though iOS may already be showing activities from a previous
+        // session. Adopt those first so we update them instead of stacking new
+        // ones on the Lock Screen.
+        adoptRunningActivities()
+
         let liveRows = days.flatMap(\.rows).filter { $0.status == .live }
         let liveIDs = Set(liveRows.map(\.id))
 
@@ -51,6 +57,20 @@ final class MatchLiveActivityManager {
                 // Best effort: if the system declines (disabled, budget), the
                 // Home Screen widget still carries the score.
                 activities[row.id] = try? Activity.request(attributes: attributes, content: content)
+            }
+        }
+    }
+
+    /// Reconciles the in-memory map with the activities iOS is actually running,
+    /// keeping one per match and ending any duplicates left over from earlier
+    /// sessions (e.g. before this de-duplication existed).
+    private func adoptRunningActivities() {
+        for activity in Activity<MatchActivityAttributes>.activities {
+            let id = activity.attributes.matchID
+            if let tracked = activities[id], tracked.id != activity.id {
+                Task { await activity.end(nil, dismissalPolicy: .immediate) }
+            } else {
+                activities[id] = activity
             }
         }
     }
