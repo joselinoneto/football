@@ -8,6 +8,8 @@ public final class PreviewFootballService: FootballService {
 
     public func refresh() async throws {}
 
+    public func refreshScores() async throws {}
+
     public func teams() async throws -> [Team] {
         [
             Team(id: "recMEX", name: "Mexico", code: "MEX", group: "A", flag: "🇲🇽"),

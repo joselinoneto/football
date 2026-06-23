@@ -23,9 +23,10 @@ set -eu
 # to this script's parent directory so it also works when run by hand.
 REPO="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$(dirname "$0")/.." && pwd)}"
 
-# Both app targets read AirtableConfiguration.current from their own git-ignored
-# Secrets.swift; they share the same credentials.
-SECRETS_PATHS="football/Support/Secrets.swift footballWatch/Support/Secrets.swift"
+# The app, the Watch app, and the widget extension each read
+# AirtableConfiguration.current from their own git-ignored Secrets.swift; they
+# all share the same credentials.
+SECRETS_PATHS="football/Support/Secrets.swift footballWatch/Support/Secrets.swift footballWidget/Support/Secrets.swift"
 
 if [ -z "${AIRTABLE_BASE_ID:-}" ] || [ -z "${AIRTABLE_TOKEN:-}" ]; then
   echo "ci_post_clone: AIRTABLE_BASE_ID / AIRTABLE_TOKEN not set — leaving Secrets.swift files untouched." >&2

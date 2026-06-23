@@ -18,6 +18,12 @@
 		D100000000000000000000C5 /* FootballPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000B5 /* FootballPresentation */; };
 		D100000000000000000000D3 /* FootballPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = D100000000000000000000D2 /* FootballPresentation */; };
 		D100000000000000000000E2 /* footballWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D100000000000000000000A2 /* footballWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D200000000000000000000C1 /* FootballCore in Frameworks */ = {isa = PBXBuildFile; productRef = D200000000000000000000B1 /* FootballCore */; };
+		D200000000000000000000C2 /* FootballAPI in Frameworks */ = {isa = PBXBuildFile; productRef = D200000000000000000000B2 /* FootballAPI */; };
+		D200000000000000000000C3 /* FootballStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D200000000000000000000B3 /* FootballStorage */; };
+		D200000000000000000000C4 /* FootballManager in Frameworks */ = {isa = PBXBuildFile; productRef = D200000000000000000000B4 /* FootballManager */; };
+		D200000000000000000000C5 /* FootballPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = D200000000000000000000B5 /* FootballPresentation */; };
+		D200000000000000000000E2 /* footballWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D200000000000000000000A2 /* footballWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +33,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = D100000000000000000000A3;
 			remoteInfo = footballWatch;
+		};
+		D200000000000000000000E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 82CC9CC32FDC88AE00B32264 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D200000000000000000000A3;
+			remoteInfo = footballWidget;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -42,22 +55,63 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D200000000000000000000E1 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D200000000000000000000E2 /* footballWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		82CC9CCB2FDC88AE00B32264 /* football.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = football.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D100000000000000000000A2 /* footballWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = footballWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D200000000000000000000A2 /* footballWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = footballWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D200000000000000000000F0 /* Exceptions for "footballWidget" folder in "footballWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Support/Secrets.swift.sample,
+			);
+			target = D200000000000000000000A3 /* footballWidget */;
+		};
+		D300000000000000000000F1 /* Exceptions for "football" folder in "football" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 82CC9CCA2FDC88AE00B32264 /* football */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		82CC9CCD2FDC88AE00B32264 /* football */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D300000000000000000000F1 /* Exceptions for "football" folder in "football" target */,
+			);
 			path = football;
 			sourceTree = "<group>";
 		};
 		D100000000000000000000A1 /* footballWatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = footballWatch;
+			sourceTree = "<group>";
+		};
+		D200000000000000000000A1 /* footballWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D200000000000000000000F0 /* Exceptions for "footballWidget" folder in "footballWidget" target */,
+			);
+			path = footballWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -87,6 +141,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D200000000000000000000A5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D200000000000000000000C1 /* FootballCore in Frameworks */,
+				D200000000000000000000C2 /* FootballAPI in Frameworks */,
+				D200000000000000000000C3 /* FootballStorage in Frameworks */,
+				D200000000000000000000C4 /* FootballManager in Frameworks */,
+				D200000000000000000000C5 /* FootballPresentation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -95,6 +161,7 @@
 			children = (
 				82CC9CCD2FDC88AE00B32264 /* football */,
 				D100000000000000000000A1 /* footballWatch */,
+				D200000000000000000000A1 /* footballWidget */,
 				82CC9CCC2FDC88AE00B32264 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -104,6 +171,7 @@
 			children = (
 				82CC9CCB2FDC88AE00B32264 /* football.app */,
 				D100000000000000000000A2 /* footballWatch.app */,
+				D200000000000000000000A2 /* footballWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -119,11 +187,13 @@
 				82CC9CC82FDC88AE00B32264 /* Frameworks */,
 				82CC9CC92FDC88AE00B32264 /* Resources */,
 				D100000000000000000000E1 /* Embed Watch Content */,
+				D200000000000000000000E1 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				D100000000000000000000E3 /* PBXTargetDependency */,
+				D200000000000000000000E3 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				82CC9CCD2FDC88AE00B32264 /* football */,
@@ -167,6 +237,33 @@
 			productReference = D100000000000000000000A2 /* footballWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D200000000000000000000A3 /* footballWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D200000000000000000000A7 /* Build configuration list for PBXNativeTarget "footballWidget" */;
+			buildPhases = (
+				D200000000000000000000A4 /* Sources */,
+				D200000000000000000000A5 /* Frameworks */,
+				D200000000000000000000A6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D200000000000000000000A1 /* footballWidget */,
+			);
+			name = footballWidget;
+			packageProductDependencies = (
+				D200000000000000000000B1 /* FootballCore */,
+				D200000000000000000000B2 /* FootballAPI */,
+				D200000000000000000000B3 /* FootballStorage */,
+				D200000000000000000000B4 /* FootballManager */,
+				D200000000000000000000B5 /* FootballPresentation */,
+			);
+			productName = footballWidget;
+			productReference = D200000000000000000000A2 /* footballWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -181,6 +278,9 @@
 						CreatedOnToolsVersion = 26.4.1;
 					};
 					D100000000000000000000A3 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					D200000000000000000000A3 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
@@ -209,6 +309,7 @@
 			targets = (
 				82CC9CCA2FDC88AE00B32264 /* football */,
 				D100000000000000000000A3 /* footballWatch */,
+				D200000000000000000000A3 /* footballWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -222,6 +323,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D100000000000000000000A6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D200000000000000000000A6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -245,6 +353,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D200000000000000000000A4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -252,6 +367,11 @@
 			isa = PBXTargetDependency;
 			target = D100000000000000000000A3 /* footballWatch */;
 			targetProxy = D100000000000000000000E4 /* PBXContainerItemProxy */;
+		};
+		D200000000000000000000E3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D200000000000000000000A3 /* footballWidget */;
+			targetProxy = D200000000000000000000E4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -377,6 +497,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = football/football.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 6CEJZ72DDU;
@@ -385,7 +506,9 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = football/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -423,6 +546,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = football/football.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 6CEJZ72DDU;
@@ -431,7 +555,9 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = football/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -536,6 +662,75 @@
 			};
 			name = Release;
 		};
+		D200000000000000000000A8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = footballWidget/footballWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 6CEJZ72DDU;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = footballWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Just Football";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = app.zeneto.football.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D200000000000000000000A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = footballWidget/footballWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 6CEJZ72DDU;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = footballWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Just Football";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = app.zeneto.football.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -562,6 +757,15 @@
 			buildConfigurations = (
 				D100000000000000000000A8 /* Debug */,
 				D100000000000000000000A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D200000000000000000000A7 /* Build configuration list for PBXNativeTarget "footballWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D200000000000000000000A8 /* Debug */,
+				D200000000000000000000A9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -629,6 +833,26 @@
 			productName = FootballPresentation;
 		};
 		D100000000000000000000D2 /* FootballPresentation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballPresentation;
+		};
+		D200000000000000000000B1 /* FootballCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballCore;
+		};
+		D200000000000000000000B2 /* FootballAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballAPI;
+		};
+		D200000000000000000000B3 /* FootballStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballStorage;
+		};
+		D200000000000000000000B4 /* FootballManager */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FootballManager;
+		};
+		D200000000000000000000B5 /* FootballPresentation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FootballPresentation;
 		};

@@ -7,14 +7,27 @@ import FootballCore
 /// never cross an isolation boundary.
 @ModelActor
 public actor FootballStore {
-    public static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
+    /// Builds the local store. Pass `appGroupID` to place the store in a shared
+    /// App Group container so another process — the Home Screen widget — can read
+    /// the same data the app writes. When `nil` (the default, used by the Watch
+    /// app) the store lives in the target's own Application Support directory.
+    public static func makeContainer(inMemory: Bool = false, appGroupID: String? = nil) throws -> ModelContainer {
         let schema = Schema([
             StoredTeam.self, StoredMatch.self, StoredGoal.self,
             StoredStanding.self, StoredMatchStat.self, StoredLineupEntry.self,
             StoredTopScorer.self, StoredMatchEvent.self, StoredSquadMember.self,
             StoredVenue.self,
         ])
-        let configuration = ModelConfiguration("Football", schema: schema, isStoredInMemoryOnly: inMemory)
+        let configuration: ModelConfiguration
+        if let appGroupID {
+            configuration = ModelConfiguration(
+                "Football",
+                schema: schema,
+                groupContainer: .identifier(appGroupID)
+            )
+        } else {
+            configuration = ModelConfiguration("Football", schema: schema, isStoredInMemoryOnly: inMemory)
+        }
         return try ModelContainer(for: schema, configurations: [configuration])
     }
 

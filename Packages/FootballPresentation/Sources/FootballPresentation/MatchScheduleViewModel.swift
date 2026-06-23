@@ -30,6 +30,18 @@ public final class MatchScheduleViewModel {
     private var squadsByTeam: [String: [SquadMember]] = [:]
     public var selectedFilter: MatchFilter = .all
 
+    /// Called on the main actor after every store reload with the freshly
+    /// loaded days. The iOS app uses it to reload the Home Screen widget and
+    /// drive the Live Activity; left nil elsewhere (e.g. the Watch app).
+    public var onStoreReloaded: (@MainActor ([MatchDay]) -> Void)?
+
+    /// Set when the app is opened from the widget or Live Activity; the
+    /// schedule screen presents this match's detail.
+    public var deepLinkedMatchID: String?
+
+    /// Opens the given match's detail (used by the widget/Live-Activity deep link).
+    public func openMatch(id: String) { deepLinkedMatchID = id }
+
     /// The grouped days narrowed down to the active filter, dropping any day
     /// left without matching matches.
     public var filteredDays: [MatchDay] {
@@ -124,6 +136,15 @@ public final class MatchScheduleViewModel {
         }
     }
 
+    /// Lightweight refresh for background app refresh: pulls just scores
+    /// (Teams + Matches) and reloads from the store, which fires
+    /// `onStoreReloaded` → widget reload + Live Activity update. Best-effort:
+    /// failures keep whatever is cached.
+    public func refreshScores() async {
+        try? await service.refreshScores()
+        await loadFromStore()
+    }
+
     private func loadFromStore() async {
         do {
             async let teamsTask = service.teams()
@@ -151,6 +172,7 @@ public final class MatchScheduleViewModel {
             if !days.isEmpty {
                 phase = .loaded
             }
+            onStoreReloaded?(days)
         } catch {
             if days.isEmpty {
                 phase = .failed(Self.loadFailureMessage)
@@ -226,13 +248,25 @@ public final class MatchScheduleViewModel {
                 MatchDay(
                     date: date,
                     isToday: date == today,
-                    rows: rows.sorted { $0.kickoff < $1.kickoff }
+                    // Live matches float to the top of their day; the rest stay
+                    // in kickoff order.
+                    rows: rows.sorted { lhs, rhs in
+                        let lhsLive = lhs.status == .live
+                        let rhsLive = rhs.status == .live
+                        if lhsLive != rhsLive { return lhsLive }
+                        return lhs.kickoff < rhs.kickoff
+                    }
                 )
             }
-            // Today's matches pinned to the top, every other day in date order.
+            // Today pinned to the top, then completed days latest-first, with
+            // upcoming days after in soonest-first order.
             .sorted { lhs, rhs in
                 if lhs.isToday != rhs.isToday { return lhs.isToday }
-                return lhs.date < rhs.date
+                let lhsPast = lhs.date < today
+                let rhsPast = rhs.date < today
+                if lhsPast != rhsPast { return lhsPast }
+                // Completed days descending (latest first); upcoming ascending.
+                return lhsPast ? lhs.date > rhs.date : lhs.date < rhs.date
             }
     }
 }
@@ -290,6 +324,8 @@ public struct MatchRowModel: Identifiable {
         public let teamID: String?
         public let flag: String
         public let name: String
+        /// Three-letter country code, e.g. "BRA"; empty when undecided.
+        public let code: String
         public let score: Int?
     }
 
@@ -334,13 +370,14 @@ public struct MatchRowModel: Identifiable {
 extension MatchRowModel.Side {
     init(teamID: String?, fallbackName: String?, score: Int?, teamsByID: [String: Team]) {
         if let teamID, let team = teamsByID[teamID] {
-            self.init(teamID: teamID, flag: team.flag, name: team.name, score: score)
+            self.init(teamID: teamID, flag: team.flag, name: team.name, code: team.code, score: score)
         } else {
             // Knockout slot not decided yet, e.g. "Winner Match 74".
             self.init(
                 teamID: nil,
                 flag: "",
                 name: fallbackName ?? String(localized: "To be decided", bundle: .module),
+                code: "",
                 score: score
             )
         }

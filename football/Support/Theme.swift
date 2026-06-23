@@ -1,15 +1,8 @@
 import SwiftUI
 import FootballPresentation
 
-extension Color {
-    /// Brand / pitch-green accent. Mirrors the asset `AccentColor` so system
-    /// controls (buttons, switches, the tint) and our own views stay in sync.
-    static let pitch = Color.accentColor
-
-    /// Attention color for in-progress matches. A touch warmer and softer than
-    /// system red so a tinted row reads as "happening now" without shouting.
-    static let live = Color(red: 0.85, green: 0.18, blue: 0.22)
-}
+// Brand colors (`Color.pitch`, `Color.live`) are defined once in
+// FootballPresentation so the app, Watch app, and widget share them.
 
 /// The schedule's canvas. A faint wash of the brand color at the top settles
 /// into the standard grouped background, so the screen feels considered rather

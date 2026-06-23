@@ -3,21 +3,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 BID="app.zeneto.football"
-RUNTIME="com.apple.CoreSimulator.SimRuntime.iOS-26-5"
+RUNTIME="com.apple.CoreSimulator.SimRuntime.iOS-26-4"
 IPHONE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
 IPAD_TYPE="com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB"
 DD="build-screens"
-
-echo "==> Building app for simulator..."
-xcodebuild -project football.xcodeproj -scheme football \
-  -configuration Debug -sdk iphonesimulator \
-  -derivedDataPath "$DD" \
-  -destination 'generic/platform=iOS Simulator' \
-  build >/tmp/jf-build.log 2>&1 || { echo "BUILD FAILED"; tail -40 /tmp/jf-build.log; exit 1; }
-
-APP="$DD/Build/Products/Debug-iphonesimulator/football.app"
-[ -d "$APP" ] || { echo "App not found at $APP"; ls -R "$DD/Build/Products" | head; exit 1; }
-echo "==> Built: $APP"
 
 # (re)create clean devices
 for name in "JF-iPhone" "JF-iPad"; do
@@ -27,6 +16,19 @@ done
 IPHONE=$(xcrun simctl create "JF-iPhone" "$IPHONE_TYPE" "$RUNTIME")
 IPAD=$(xcrun simctl create "JF-iPad" "$IPAD_TYPE" "$RUNTIME")
 echo "==> iPhone=$IPHONE  iPad=$IPAD"
+
+echo "==> Building app for simulator..."
+# Build against a concrete simulator (not 'generic/...') so the widget
+# extension's local package deps resolve under a single arch.
+xcodebuild -project football.xcodeproj -scheme football \
+  -configuration Debug \
+  -derivedDataPath "$DD" \
+  -destination "id=$IPHONE" \
+  build >/tmp/jf-build.log 2>&1 || { echo "BUILD FAILED"; tail -40 /tmp/jf-build.log; exit 1; }
+
+APP="$DD/Build/Products/Debug-iphonesimulator/football.app"
+[ -d "$APP" ] || { echo "App not found at $APP"; ls -R "$DD/Build/Products" | head; exit 1; }
+echo "==> Built: $APP"
 
 shoot() { # udid bundle outfile lang appearance extraArg
   local udid="$1" out="$3" lang="$4" appr="$5" extra="${6:-}"
@@ -38,8 +40,9 @@ shoot() { # udid bundle outfile lang appearance extraArg
     xcrun simctl launch "$udid" "$BID" -AppleLanguages "($lang)" -AppleLocale "${lang/-/_}" >/dev/null
   fi
   sleep 9
-  mkdir -p "$(dirname "$out")"
-  xcrun simctl io "$udid" screenshot "$out" >/dev/null
+  local abs="$PWD/$out"
+  mkdir -p "$(dirname "$abs")"
+  xcrun simctl io "$udid" screenshot "$abs" >/dev/null
   echo "    saved $out"
 }
 
