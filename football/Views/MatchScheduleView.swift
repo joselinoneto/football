@@ -2,9 +2,25 @@ import SwiftUI
 import FootballCore
 import FootballPresentation
 
-enum ScheduleSection: Hashable {
+enum ScheduleSection: String, CaseIterable, Identifiable {
     case matches
     case standings
+
+    var id: String { rawValue }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .matches: "Matches"
+        case .standings: "Standings"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .matches: "soccerball"
+        case .standings: "list.number"
+        }
+    }
 }
 
 struct MatchScheduleView: View {
@@ -74,13 +90,9 @@ struct MatchScheduleView: View {
             }
         case .loaded:
             VStack(spacing: 0) {
-                Picker("Section", selection: $section) {
-                    Text("Matches").tag(ScheduleSection.matches)
-                    Text("Standings").tag(ScheduleSection.standings)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.top, Design.Spacing.medium)
+                SectionSwitcher(selection: $section)
+                    .padding(.horizontal)
+                    .padding(.top, Design.Spacing.medium)
 
                 switch section {
                 case .matches:
@@ -95,14 +107,16 @@ struct MatchScheduleView: View {
 
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Design.Spacing.medium) {
-                ForEach(MatchFilter.allCases) { filter in
-                    FilterChip(
-                        title: filter.title,
-                        isSelected: viewModel.selectedFilter == filter
-                    ) {
-                        withAnimation(.snappy) {
-                            viewModel.selectedFilter = filter
+            GlassEffectContainer(spacing: Design.Spacing.medium) {
+                HStack(spacing: Design.Spacing.medium) {
+                    ForEach(MatchFilter.allCases) { filter in
+                        FilterChip(
+                            title: filter.title,
+                            isSelected: viewModel.selectedFilter == filter
+                        ) {
+                            withAnimation(.snappy) {
+                                viewModel.selectedFilter = filter
+                            }
                         }
                     }
                 }
@@ -155,6 +169,45 @@ struct MatchScheduleView: View {
     }
 }
 
+/// The Schedule / Standings switcher: two big, tappable segments on a Liquid
+/// Glass track, with a tinted brand-green pill that springs between them as the
+/// selection changes.
+private struct SectionSwitcher: View {
+    @Binding var selection: ScheduleSection
+    @Namespace private var pill
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(ScheduleSection.allCases) { section in
+                let isSelected = selection == section
+                Button {
+                    withAnimation(.bouncy(duration: 0.45)) { selection = section }
+                } label: {
+                    Label(section.title, systemImage: section.icon)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+                        .foregroundStyle(isSelected ? Color.white : Color.secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Design.Spacing.large)
+                        .background {
+                            if isSelected {
+                                Capsule()
+                                    .fill(Color.pitch.gradient)
+                                    .shadow(color: Color.pitch.opacity(0.35),
+                                            radius: 8, y: 2)
+                                    .matchedGeometryEffect(id: "selection", in: pill)
+                            }
+                        }
+                        .contentShape(.capsule)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(Design.Spacing.xSmall)
+        .glassEffect(.regular, in: .capsule)
+    }
+}
+
 private struct DayHeader: View {
     let day: MatchDay
 
@@ -184,20 +237,15 @@ private struct FilterChip: View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(isSelected ? Color.white : Color.primary)
                 .padding(.horizontal, Design.Spacing.xxxLarge)
                 .padding(.vertical, Design.Spacing.medium)
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
-                .background {
-                    Capsule()
-                        .fill(isSelected ? AnyShapeStyle(Color.pitch) : AnyShapeStyle(.thinMaterial))
-                }
-                .overlay {
-                    if !isSelected {
-                        Capsule().strokeBorder(Color.primary.opacity(Design.Opacity.chipBorder))
-                    }
-                }
         }
         .buttonStyle(.plain)
+        .glassEffect(
+            isSelected ? .regular.tint(Color.pitch).interactive() : .regular.interactive(),
+            in: .capsule
+        )
         .animation(.snappy, value: isSelected)
     }
 }
