@@ -204,4 +204,69 @@ public actor FootballStore {
         try reconcile(items, id: \.id, storedID: \StoredVenue.remoteID,
                       insert: StoredVenue.init, update: { $0.update(from: $1) })
     }
+
+    // MARK: Scoped merge (live polling)
+
+    /// Upserts matches without pruning. The live poll fetches only the
+    /// live/imminent subset, so rows it omits (other days' matches) must be
+    /// left in place — pruning happens only on the full `replaceMatches`.
+    public func upsertMatches(_ matches: [Match]) throws {
+        let stored = try modelContext.fetch(FetchDescriptor<StoredMatch>())
+        let existing = Dictionary(stored.map { ($0.remoteID, $0) }, uniquingKeysWith: { first, _ in first })
+        for match in matches {
+            if let row = existing[match.id] {
+                row.update(from: match)
+            } else {
+                modelContext.insert(StoredMatch(match))
+            }
+        }
+        try modelContext.save()
+    }
+
+    /// Upsert-and-scoped-prune for match-scoped child tables: rows in the
+    /// incoming set are upserted, and stale rows are deleted *only* when their
+    /// match number is in `scope`. Rows for matches outside the polled scope are
+    /// never touched, so the live poll can refresh just the live matches'
+    /// children without wiping the rest of the tournament.
+    private func mergeScoped<Stored: PersistentModel, Value>(
+        _ values: [Value],
+        scope: Set<Int>,
+        id: (Value) -> String,
+        storedID: (Stored) -> String,
+        matchNumber: (Stored) -> Int,
+        insert: (Value) -> Stored,
+        update: (Stored, Value) -> Void
+    ) throws {
+        let stored = try modelContext.fetch(FetchDescriptor<Stored>())
+        var existing = Dictionary(stored.map { (storedID($0), $0) }, uniquingKeysWith: { first, _ in first })
+        for value in values {
+            if let row = existing.removeValue(forKey: id(value)) {
+                update(row, value)
+            } else {
+                modelContext.insert(insert(value))
+            }
+        }
+        for row in existing.values where scope.contains(matchNumber(row)) {
+            modelContext.delete(row)
+        }
+        try modelContext.save()
+    }
+
+    public func mergeGoals(_ items: [Goal], forMatchNumbers scope: Set<Int>) throws {
+        try mergeScoped(items, scope: scope, id: \.id, storedID: \StoredGoal.remoteID,
+                        matchNumber: \StoredGoal.matchNumber,
+                        insert: StoredGoal.init, update: { $0.update(from: $1) })
+    }
+
+    public func mergeMatchStats(_ items: [MatchStat], forMatchNumbers scope: Set<Int>) throws {
+        try mergeScoped(items, scope: scope, id: \.id, storedID: \StoredMatchStat.remoteID,
+                        matchNumber: \StoredMatchStat.matchNumber,
+                        insert: StoredMatchStat.init, update: { $0.update(from: $1) })
+    }
+
+    public func mergeMatchEvents(_ items: [MatchEvent], forMatchNumbers scope: Set<Int>) throws {
+        try mergeScoped(items, scope: scope, id: \.id, storedID: \StoredMatchEvent.remoteID,
+                        matchNumber: \StoredMatchEvent.matchNumber,
+                        insert: StoredMatchEvent.init, update: { $0.update(from: $1) })
+    }
 }

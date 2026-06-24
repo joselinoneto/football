@@ -373,6 +373,7 @@
       }
     },
     "Ranking of the third-placed teams; the best eight advance." : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
