@@ -18,12 +18,15 @@ struct AirtableTransport: Sendable {
 
     func allRecords<Fields: Decodable & Sendable>(
         table: String,
-        fields: [String]
+        fields: [String],
+        filterByFormula: String? = nil
     ) async throws -> [AirtableRecord<Fields>] {
         var records: [AirtableRecord<Fields>] = []
         var offset: String? = nil
         repeat {
-            let page: AirtablePage<Fields> = try await page(table: table, fields: fields, offset: offset)
+            let page: AirtablePage<Fields> = try await page(
+                table: table, fields: fields, filterByFormula: filterByFormula, offset: offset
+            )
             records.append(contentsOf: page.records)
             offset = page.offset
         } while offset != nil
@@ -33,6 +36,7 @@ struct AirtableTransport: Sendable {
     private func page<Fields: Decodable & Sendable>(
         table: String,
         fields: [String],
+        filterByFormula: String?,
         offset: String?
     ) async throws -> AirtablePage<Fields> {
         let tableURL = configuration.baseURL
@@ -41,6 +45,9 @@ struct AirtableTransport: Sendable {
         var components = URLComponents(url: tableURL, resolvingAgainstBaseURL: false)
         var queryItems = [URLQueryItem(name: "pageSize", value: "100")]
         queryItems.append(contentsOf: fields.map { URLQueryItem(name: "fields[]", value: $0) })
+        if let filterByFormula {
+            queryItems.append(URLQueryItem(name: "filterByFormula", value: filterByFormula))
+        }
         if let offset {
             queryItems.append(URLQueryItem(name: "offset", value: offset))
         }

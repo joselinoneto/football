@@ -124,12 +124,23 @@ struct WidgetMatchProvider: AppIntentTimelineProvider {
 extension WidgetMatchProvider {
     static func makeEntry(for configuration: SelectTeamIntent, refresh: Bool) async -> MatchEntry {
         let service = WidgetDependencies.service
-        // The widget can pull fresh scores itself (lightweight: Teams + Matches),
-        // independent of the app being open.
-        if refresh { try? await service.refreshScores() }
+        // The widget pulls fresh scores itself, independent of the app being
+        // open. To spare the API, scope the network to what actually changed:
+        // during the fast live cadence (60s) only the live/imminent matches move,
+        // so one scoped request suffices (no Teams). On the relaxed cadence — or
+        // a cold store — do the fuller Teams + Matches pull to pick up schedule
+        // changes and final scores.
+        var matches = (try? await service.matches()) ?? []
+        if refresh {
+            if matches.contains(where: { $0.status == .live }) {
+                try? await service.refreshLiveScores()
+            } else {
+                try? await service.refreshScores()
+            }
+            matches = (try? await service.matches()) ?? []
+        }
 
         let teams = (try? await service.teams()) ?? []
-        let matches = (try? await service.matches()) ?? []
         let teamsByID = Dictionary(teams.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         let all = matches.map { WidgetMatch(match: $0, teamsByID: teamsByID) }
         let now = Date()

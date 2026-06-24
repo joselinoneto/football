@@ -8,7 +8,15 @@ public final class PreviewFootballService: FootballService {
 
     public func refresh() async throws {}
 
+    public func refreshStatic() async throws {}
+
+    public func refreshLive() async throws {}
+
     public func refreshScores() async throws {}
+
+    public func refreshLiveScores() async throws {}
+
+    public func refreshStandings() async throws {}
 
     public func teams() async throws -> [Team] {
         [

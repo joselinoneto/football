@@ -13,6 +13,14 @@ struct StandingsList: View {
     private let hInset = Design.Spacing.xxxLarge
 
     var body: some View {
+        content
+            // Standings are not on the polling loop; refresh them whenever this
+            // section is presented (re-runs each time the section reappears).
+            .task { await viewModel.refreshStandings() }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         if viewModel.standingsGroups.isEmpty {
             ContentUnavailableView(
                 "No Standings",
