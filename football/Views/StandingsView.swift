@@ -62,12 +62,6 @@ struct StandingsList: View {
             }
             .background(Color(uiColor: .secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: Design.Radius.card))
-
-            if group.isThirdPlaceRanking {
-                Text("Ranking of the third-placed teams; the best eight advance.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 

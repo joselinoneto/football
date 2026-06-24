@@ -259,6 +259,9 @@ public final class MatchScheduleViewModel {
 
     private static func standingsGroups(_ standings: [Standing], teamsByID: [String: Team]) -> [StandingsGroup] {
         Dictionary(grouping: standings, by: \.group)
+            // Drop the pooled third-placed-teams ranking ("Group Stage") — its
+            // data is unreliable and it isn't useful in the app.
+            .filter { name, _ in name != "Group Stage" }
             .map { name, rows in
                 StandingsGroup(
                     name: name,
@@ -266,7 +269,7 @@ public final class MatchScheduleViewModel {
                         .map { StandingRowModel(standing: $0, team: $0.teamID.flatMap { teamsByID[$0] }) }
                 )
             }
-            .sorted { $0.sortKey < $1.sortKey }
+            .sorted { $0.name < $1.name }
     }
 
     private static func groupedByDay(_ rows: [MatchRowModel]) -> [MatchDay] {
@@ -603,14 +606,7 @@ public struct StandingsGroup: Identifiable {
 
     public var id: String { name }
 
-    /// The pooled third-placed ranking sorts last and is labelled differently.
-    public var isThirdPlaceRanking: Bool { name == "Group Stage" }
-    var sortKey: String { isThirdPlaceRanking ? "ZZZ" : name }
-
     public var title: String {
-        if isThirdPlaceRanking {
-            return String(localized: "Third-placed teams", bundle: .module)
-        }
         if name.hasPrefix("Group "), let letter = name.split(separator: " ").last {
             return String(localized: "Group \(String(letter))", bundle: .module)
         }

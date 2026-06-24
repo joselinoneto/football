@@ -499,6 +499,7 @@
       }
     },
     "Third-placed teams" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
