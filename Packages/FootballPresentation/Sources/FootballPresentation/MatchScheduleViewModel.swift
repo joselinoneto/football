@@ -69,9 +69,13 @@ public final class MatchScheduleViewModel {
     /// (i.e. the screen goes away), so there is no manual lifecycle to manage.
     public func start() async {
         await loadFromStore()
+        // One full refresh on appear pulls the static reference tables (Teams,
+        // Squads, Standings …); the loop then polls only the live-changing
+        // tables, keeping the per-poll request count low.
+        await refresh()
         while !Task.isCancelled {
-            await refresh()
             try? await Task.sleep(for: .seconds(pollInterval))
+            await refreshLive()
         }
     }
 
@@ -133,6 +137,32 @@ public final class MatchScheduleViewModel {
             if days.isEmpty {
                 phase = .failed(Self.loadFailureMessage)
             }
+        }
+    }
+
+    /// The polling payload: refreshes only the tables that change during a live
+    /// match (Matches, Goals, Match Stats, Match Events), then reloads from the
+    /// store. Static reference data is loaded once by `start()`'s initial
+    /// `refresh()` and on pull-to-refresh, so it stays out of the loop.
+    public func refreshLive() async {
+        do {
+            try await service.refreshLive()
+            await loadFromStore()
+        } catch {
+            if days.isEmpty {
+                phase = .failed(Self.loadFailureMessage)
+            }
+        }
+    }
+
+    /// Refreshes just the standings, then updates the standings groups in place.
+    /// Driven by the Standings section appearing (not the polling loop), so it
+    /// runs every time that section is presented — even if already populated —
+    /// and avoids a per-cycle standings request while matches are live.
+    public func refreshStandings() async {
+        try? await service.refreshStandings()
+        if let standings = try? await service.standings() {
+            standingsGroups = Self.standingsGroups(standings, teamsByID: teamsByID)
         }
     }
 
@@ -229,6 +259,9 @@ public final class MatchScheduleViewModel {
 
     private static func standingsGroups(_ standings: [Standing], teamsByID: [String: Team]) -> [StandingsGroup] {
         Dictionary(grouping: standings, by: \.group)
+            // Drop the pooled third-placed-teams ranking ("Group Stage") — its
+            // data is unreliable and it isn't useful in the app.
+            .filter { name, _ in name != "Group Stage" }
             .map { name, rows in
                 StandingsGroup(
                     name: name,
@@ -236,7 +269,7 @@ public final class MatchScheduleViewModel {
                         .map { StandingRowModel(standing: $0, team: $0.teamID.flatMap { teamsByID[$0] }) }
                 )
             }
-            .sorted { $0.sortKey < $1.sortKey }
+            .sorted { $0.name < $1.name }
     }
 
     private static func groupedByDay(_ rows: [MatchRowModel]) -> [MatchDay] {
@@ -573,14 +606,7 @@ public struct StandingsGroup: Identifiable {
 
     public var id: String { name }
 
-    /// The pooled third-placed ranking sorts last and is labelled differently.
-    public var isThirdPlaceRanking: Bool { name == "Group Stage" }
-    var sortKey: String { isThirdPlaceRanking ? "ZZZ" : name }
-
     public var title: String {
-        if isThirdPlaceRanking {
-            return String(localized: "Third-placed teams", bundle: .module)
-        }
         if name.hasPrefix("Group "), let letter = name.split(separator: " ").last {
             return String(localized: "Group \(String(letter))", bundle: .module)
         }

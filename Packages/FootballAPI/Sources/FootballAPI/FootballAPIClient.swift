@@ -12,6 +12,14 @@ public protocol FootballAPIClient: Sendable {
     func fetchMatchEvents() async throws -> [MatchEvent]
     func fetchSquads() async throws -> [SquadMember]
     func fetchVenues() async throws -> [Venue]
+
+    // Scoped variants for the live polling loop: instead of pulling whole
+    // tables, they ask Airtable for just the live/imminent matches and the
+    // child rows (goals, stats, events) belonging to those match numbers.
+    func fetchLiveMatches(locale: ContentLocale) async throws -> [Match]
+    func fetchGoals(matchNumbers: [Int]) async throws -> [Goal]
+    func fetchMatchStats(matchNumbers: [Int]) async throws -> [MatchStat]
+    func fetchMatchEvents(matchNumbers: [Int]) async throws -> [MatchEvent]
 }
 
 public struct AirtableFootballClient: FootballAPIClient {
@@ -102,5 +110,63 @@ public struct AirtableFootballClient: FootballAPIClient {
             fields: VenueFields.requestedFields()
         )
         return records.compactMap { Venue(record: $0) }
+    }
+
+    // MARK: - Scoped (live polling)
+
+    public func fetchLiveMatches(locale: ContentLocale) async throws -> [Match] {
+        let records: [AirtableRecord<MatchFields>] = try await transport.allRecords(
+            table: "Matches",
+            fields: MatchFields.requestedFields(for: locale),
+            filterByFormula: Self.liveMatchesFormula
+        )
+        return records.compactMap { Match(record: $0, locale: locale) }
+            .sorted { $0.number < $1.number }
+    }
+
+    public func fetchGoals(matchNumbers: [Int]) async throws -> [Goal] {
+        guard let formula = Self.matchNumberFormula(matchNumbers) else { return [] }
+        let records: [AirtableRecord<GoalFields>] = try await transport.allRecords(
+            table: "Goals",
+            fields: GoalFields.requestedFields(),
+            filterByFormula: formula
+        )
+        return records.compactMap { Goal(record: $0) }
+    }
+
+    public func fetchMatchStats(matchNumbers: [Int]) async throws -> [MatchStat] {
+        guard let formula = Self.matchNumberFormula(matchNumbers) else { return [] }
+        let records: [AirtableRecord<MatchStatFields>] = try await transport.allRecords(
+            table: "Match Stats",
+            fields: MatchStatFields.requestedFields(),
+            filterByFormula: formula
+        )
+        return records.compactMap { MatchStat(record: $0) }
+    }
+
+    public func fetchMatchEvents(matchNumbers: [Int]) async throws -> [MatchEvent] {
+        guard let formula = Self.matchNumberFormula(matchNumbers) else { return [] }
+        let records: [AirtableRecord<MatchEventFields>] = try await transport.allRecords(
+            table: "Match Events",
+            fields: MatchEventFields.requestedFields(),
+            filterByFormula: formula
+        )
+        return records.compactMap { MatchEvent(record: $0) }
+    }
+
+    /// Matches that are live now, plus any kicking off within a window around
+    /// now, so a scheduled match flipping to live — or one that just finished —
+    /// is still caught by the scoped poll.
+    private static let liveMatchesFormula =
+        "OR(LOWER({Status})='live'," +
+        "AND(IS_AFTER({Kickoff},DATEADD(NOW(),-3,'hours'))," +
+        "IS_BEFORE({Kickoff},DATEADD(NOW(),15,'minutes'))))"
+
+    /// `OR({Match No}=1,{Match No}=2,…)`, or nil when the scope is empty so the
+    /// caller can skip the request entirely (an empty `OR()` is invalid).
+    private static func matchNumberFormula(_ numbers: [Int]) -> String? {
+        guard !numbers.isEmpty else { return nil }
+        let clauses = numbers.map { "{Match No}=\($0)" }.joined(separator: ",")
+        return "OR(\(clauses))"
     }
 }
