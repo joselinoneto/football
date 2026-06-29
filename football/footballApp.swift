@@ -28,7 +28,7 @@ struct footballApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MatchScheduleView(viewModel: viewModel)
+            RootTabView(viewModel: viewModel)
                 .onOpenURL { url in
                     if let id = MatchDeepLink.matchID(from: url) {
                         viewModel.openMatch(id: id)
