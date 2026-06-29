@@ -8,6 +8,7 @@ import FootballPresentation
 /// they work regardless of the selected tab.
 struct RootTabView: View {
     @State var viewModel: MatchScheduleViewModel
+    var appearance: AppearanceStore
     @State private var selection: AppTab = .initialFromLaunchArguments
 
     private enum AppTab: Hashable {
@@ -37,7 +38,6 @@ struct RootTabView: View {
                 NavigationStack {
                     KnockoutBracketView(viewModel: viewModel)
                         .background(AppBackground())
-                        .navigationTitle("Matches")
                 }
             }
             Tab("Group Stage", systemImage: "list.number", value: AppTab.groupStage) {
@@ -49,14 +49,16 @@ struct RootTabView: View {
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 NavigationStack {
-                    SettingsView()
+                    SettingsView(viewModel: viewModel, appearance: appearance)
                         .background(AppBackground())
                         .navigationTitle("Settings")
                 }
             }
         }
-        // Tint the selected tab with the brand/accent green (mirrors the
-        // AccentColor asset) instead of the system default blue.
+        // Rebuild the whole UI when the favorite team changes, so every brand
+        // surface re-reads the now-team-colored `Color.pitch`.
+        .id(appearance.brandToken)
+        // Tint the selected tab with the brand accent (team color or green).
         .tint(Color.pitch)
         .task {
             await viewModel.start()
@@ -86,6 +88,7 @@ struct RootTabView: View {
 
 #Preview {
     RootTabView(
-        viewModel: MatchScheduleViewModel(service: PreviewFootballService())
+        viewModel: MatchScheduleViewModel(service: PreviewFootballService()),
+        appearance: AppearanceStore()
     )
 }

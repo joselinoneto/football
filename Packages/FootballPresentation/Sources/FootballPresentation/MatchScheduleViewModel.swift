@@ -111,6 +111,12 @@ public final class MatchScheduleViewModel {
         teamsByID[teamID].map(TeamRowModel.init)
     }
 
+    /// Every loaded team, ordered by group then name — for the favorite-team
+    /// picker in Settings. Empty until the first store load completes.
+    public var allTeams: [Team] {
+        teamsByID.values.sorted { ($0.group, $0.name) < ($1.group, $1.name) }
+    }
+
     /// The team's roster, split into goalkeeper/defender/midfielder/attacker
     /// sections, each ordered by shirt number.
     public func squadSections(for teamID: String) -> [SquadLineSection] {
