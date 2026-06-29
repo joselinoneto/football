@@ -363,6 +363,8 @@ public struct MatchRowModel: Identifiable {
     }
 
     public let id: String
+    /// Official match number 1–104.
+    public let number: Int
     public let kickoff: Date
     public let stage: Stage
     public let venue: String
@@ -374,6 +376,7 @@ public struct MatchRowModel: Identifiable {
 
     public init(match: Match, teamsByID: [String: Team]) {
         id = match.id
+        number = match.number
         kickoff = match.kickoff
         stage = match.stage
         venue = match.venue

@@ -11,6 +11,40 @@ struct MatchListView: View {
 
     var body: some View {
         content
+            .toolbar {
+                if case .loaded = viewModel.phase {
+                    ToolbarItem(placement: .primaryAction) {
+                        filterMenu
+                    }
+                }
+            }
+    }
+
+    /// The day/upcoming/finished filter, as a top-bar dropdown so the schedule
+    /// gets the full screen. The label shows the active filter.
+    private var filterMenu: some View {
+        Menu {
+            Picker("Filter", selection: filterBinding) {
+                ForEach(MatchFilter.allCases) { filter in
+                    Text(filter.title).tag(filter)
+                }
+            }
+        } label: {
+            HStack(spacing: Design.Spacing.xSmall) {
+                Image(systemName: "line.3.horizontal.decrease")
+                Text(viewModel.selectedFilter.title)
+                    .fontWeight(.semibold)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.bold))
+            }
+        }
+    }
+
+    private var filterBinding: Binding<MatchFilter> {
+        Binding(
+            get: { viewModel.selectedFilter },
+            set: { newValue in withAnimation(.snappy) { viewModel.selectedFilter = newValue } }
+        )
     }
 
     @ViewBuilder
@@ -31,31 +65,7 @@ struct MatchListView: View {
                 .buttonStyle(.borderedProminent)
             }
         case .loaded:
-            VStack(spacing: 0) {
-                filterBar
-                matchList
-            }
-        }
-    }
-
-    private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            GlassEffectContainer(spacing: Design.Spacing.medium) {
-                HStack(spacing: Design.Spacing.medium) {
-                    ForEach(MatchFilter.allCases) { filter in
-                        FilterChip(
-                            title: filter.title,
-                            isSelected: viewModel.selectedFilter == filter
-                        ) {
-                            withAnimation(.snappy) {
-                                viewModel.selectedFilter = filter
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.vertical, Design.Spacing.medium)
+            matchList
         }
     }
 
@@ -119,28 +129,6 @@ private struct DayHeader: View {
         }
         .textCase(nil)
         .padding(.bottom, Design.Spacing.xxSmall)
-    }
-}
-
-private struct FilterChip: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
-                .padding(.horizontal, Design.Spacing.xxxLarge)
-                .padding(.vertical, Design.Spacing.medium)
-        }
-        .buttonStyle(.plain)
-        .glassEffect(
-            isSelected ? .regular.tint(Color.pitch).interactive() : .regular.interactive(),
-            in: .capsule
-        )
-        .animation(.snappy, value: isSelected)
     }
 }
 

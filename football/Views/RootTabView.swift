@@ -35,7 +35,7 @@ struct RootTabView: View {
             }
             Tab("Matches", systemImage: "soccerball", value: AppTab.matches) {
                 NavigationStack {
-                    FutureGamesView(viewModel: viewModel)
+                    KnockoutBracketView(viewModel: viewModel)
                         .background(AppBackground())
                         .navigationTitle("Matches")
                 }
