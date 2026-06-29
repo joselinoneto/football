@@ -9,7 +9,7 @@ import FootballPresentation
 struct KnockoutBracketView: View {
     let viewModel: MatchScheduleViewModel
 
-    @State private var page = 0
+    @State private var scrolledPage: Int?
 
     /// The knockout rounds present in the data, in bracket order. Group and
     /// third-place matches are excluded; a round with no matches yet is dropped.
@@ -46,47 +46,43 @@ struct KnockoutBracketView: View {
                 description: Text("The knockout bracket isn't available yet.")
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .navigationTitle("Matches")
         } else {
             paged(rounds)
         }
     }
 
     private func paged(_ rounds: [BracketRound]) -> some View {
-        let current = min(page, rounds.count - 1)
-        // The paging TabView is the NavigationStack's direct content (not nested
-        // in a VStack) so its pages keep the bottom safe-area inset for the
-        // floating Liquid Glass tab bar; the round header rides on a top inset.
-        return TabView(selection: $page) {
-            ForEach(Array(rounds.enumerated()), id: \.element.id) { index, round in
-                RoundPage(
-                    round: round,
-                    nextRoundName: index + 1 < rounds.count ? rounds[index + 1].stage.displayName : nil,
-                    thirdPlace: round.stage == .final ? thirdPlace : nil,
-                    viewModel: viewModel
-                )
-                .tag(index)
+        let current = min(max(scrolledPage ?? 0, 0), rounds.count - 1)
+        // Horizontal paging ScrollView (not a TabView) so each round is a real
+        // scroll view that extends under the Liquid Glass tab bar like the other
+        // tabs. The round name rides in the inline nav title and the page dots in
+        // the toolbar — both system-managed, so nothing overlaps the content.
+        return ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(Array(rounds.enumerated()), id: \.element.id) { index, round in
+                    RoundPage(
+                        round: round,
+                        nextRoundName: index + 1 < rounds.count ? rounds[index + 1].stage.displayName : nil,
+                        thirdPlace: round.stage == .final ? thirdPlace : nil,
+                        viewModel: viewModel
+                    )
+                    .containerRelativeFrame([.horizontal, .vertical])
+                    .id(index)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: $scrolledPage)
+        .scrollIndicators(.hidden)
+        .navigationTitle(rounds[current].stage.displayName)
+        .toolbarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                PageDots(count: rounds.count, index: current)
             }
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .safeAreaInset(edge: .top, spacing: 0) {
-            header(rounds[current], count: rounds.count, index: current)
-        }
-    }
-
-    private func header(_ round: BracketRound, count: Int, index: Int) -> some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: Design.Spacing.xxSmall) {
-                Text(round.stage.displayName)
-                    .font(.title2.weight(.bold))
-                Text(round.matches.count == 1 ? "1 match" : "\(round.matches.count) matches")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            PageDots(count: count, index: index)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, Design.Spacing.large)
     }
 
     // MARK: Bracket structure

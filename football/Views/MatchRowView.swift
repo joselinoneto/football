@@ -12,13 +12,14 @@ struct MatchRowView: View {
                 teamLine(row.home, opponentScore: row.away.score)
                 teamLine(row.away, opponentScore: row.home.score)
             }
+            venueRow
         }
         .padding(.vertical, Design.Spacing.small)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
 
-    // MARK: Header (context + status)
+    // MARK: Header (stage + status)
 
     private var header: some View {
         HStack(spacing: Design.Spacing.small) {
@@ -27,15 +28,25 @@ struct MatchRowView: View {
                     .font(.caption2.weight(.bold))
                     .textCase(.uppercase)
                     .foregroundStyle(Color.pitch)
-                Text(verbatim: "·")
-                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
+            Spacer(minLength: Design.Spacing.medium)
+            trailingDetail
+        }
+    }
+
+    // MARK: Venue (stadium), shown at the bottom of the row
+
+    private var venueRow: some View {
+        HStack(spacing: Design.Spacing.small) {
+            Image(systemName: "mappin.and.ellipse")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
             Text(row.venue)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
-            Spacer(minLength: Design.Spacing.medium)
-            trailingDetail
+            Spacer(minLength: 0)
         }
     }
 
@@ -48,6 +59,8 @@ struct MatchRowView: View {
                     Text(minute)
                         .font(.caption.weight(.bold).monospacedDigit())
                         .foregroundStyle(Color.live)
+                        .lineLimit(1)
+                        .fixedSize()
                 }
                 LiveBadge()
             }
@@ -77,8 +90,10 @@ struct MatchRowView: View {
                     .scaleEffect(pulsing ? Design.Motion.pulseScale : 1)
                     .opacity(pulsing ? Design.Opacity.pulseMin : 1)
                 Text("LIVE")
+                    .lineLimit(1)
             }
             .font(.caption2.bold())
+            .fixedSize()
             .padding(.horizontal, Design.Pill.horizontalPadding)
             .padding(.vertical, Design.Pill.verticalPadding)
             .background(Color.live, in: Capsule())
