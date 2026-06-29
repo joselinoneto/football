@@ -2,14 +2,16 @@ import SwiftUI
 import FootballCore
 import FootballPresentation
 
-/// The Matches tab: the knockout phase, one round per screen. Swipe left/right
-/// to move through the rounds (Round of 32 → Final); a round's matches are a
-/// clean vertical list, grouped into the pairs whose winners meet in the next
-/// round so the bracket relationship stays visible without a 2-D canvas.
+/// The Matches tab: the knockout phase, one round at a time. Built like the Home
+/// schedule — a large title, an inset-grouped list that scrolls under the glass
+/// tab bar, and a round selector in the toolbar (the same dropdown pattern as the
+/// Home filter). A round's ties are grouped into the bracket pairs whose winners
+/// meet in the next round, so the bracket relationship stays visible in a plain
+/// vertical list.
 struct KnockoutBracketView: View {
     let viewModel: MatchScheduleViewModel
 
-    @State private var scrolledPage: Int?
+    @State private var selectedStage: Stage?
 
     /// The knockout rounds present in the data, in bracket order. Group and
     /// third-place matches are excluded; a round with no matches yet is dropped.
@@ -39,53 +41,134 @@ struct KnockoutBracketView: View {
 
     var body: some View {
         let rounds = self.rounds
-        if rounds.isEmpty {
-            ContentUnavailableView(
-                "No Knockout Matches",
-                systemImage: "trophy",
-                description: Text("The knockout bracket isn't available yet.")
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle("Matches")
-        } else {
-            paged(rounds)
+        Group {
+            if rounds.isEmpty {
+                ContentUnavailableView(
+                    "No Knockout Matches",
+                    systemImage: "trophy",
+                    description: Text("The knockout bracket isn't available yet.")
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                roundList(currentRound(in: rounds), in: rounds)
+            }
+        }
+        .toolbar {
+            if !rounds.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    roundMenu(rounds)
+                }
+            }
         }
     }
 
-    private func paged(_ rounds: [BracketRound]) -> some View {
-        let current = min(max(scrolledPage ?? 0, 0), rounds.count - 1)
-        // Horizontal paging ScrollView (not a TabView) so each round is a real
-        // scroll view that extends under the Liquid Glass tab bar like the other
-        // tabs. The round name rides in the inline nav title and the page dots in
-        // the toolbar — both system-managed, so nothing overlaps the content.
-        return ScrollView(.horizontal) {
-            LazyHStack(spacing: 0) {
-                ForEach(Array(rounds.enumerated()), id: \.element.id) { index, round in
-                    RoundPage(
-                        round: round,
-                        nextRoundName: index + 1 < rounds.count ? rounds[index + 1].stage.displayName : nil,
-                        thirdPlace: round.stage == .final ? thirdPlace : nil,
-                        viewModel: viewModel
-                    )
-                    .containerRelativeFrame([.horizontal, .vertical])
-                    .id(index)
+    /// The selected round, falling back to the first available one.
+    private func currentRound(in rounds: [BracketRound]) -> BracketRound {
+        rounds.first { $0.stage == selectedStage } ?? rounds[0]
+    }
+
+    /// The round switcher, as a top-bar dropdown so the list gets the full
+    /// screen — the same pattern as the Home filter. The label shows the round.
+    private func roundMenu(_ rounds: [BracketRound]) -> some View {
+        Menu {
+            Picker("Round", selection: roundBinding(rounds)) {
+                ForEach(rounds) { round in
+                    Text(round.stage.displayName).tag(round.stage)
                 }
             }
-            .scrollTargetLayout()
-        }
-        .scrollTargetBehavior(.paging)
-        .scrollPosition(id: $scrolledPage)
-        .scrollIndicators(.hidden)
-        .navigationTitle(rounds[current].stage.displayName)
-        .toolbarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                PageDots(count: rounds.count, index: current)
+        } label: {
+            HStack(spacing: Design.Spacing.xSmall) {
+                Image(systemName: "rectangle.split.3x1")
+                Text(currentRound(in: rounds).stage.displayName)
+                    .fontWeight(.semibold)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.bold))
             }
+        }
+    }
+
+    private func roundBinding(_ rounds: [BracketRound]) -> Binding<Stage> {
+        Binding(
+            get: { currentRound(in: rounds).stage },
+            set: { newValue in withAnimation(.snappy) { selectedStage = newValue } }
+        )
+    }
+
+    // MARK: List
+
+    private func roundList(_ round: BracketRound, in rounds: [BracketRound]) -> some View {
+        let nextRoundName = round.stage == .final
+            ? nil
+            : rounds.first { Self.order(after: round.stage) == $0.stage }?.stage.displayName
+        return List {
+            if round.stage == .final {
+                finalSections(round)
+            } else {
+                ForEach(pairs(of: round)) { pair in
+                    Section {
+                        tieRow(pair.top)
+                        if let bottom = pair.bottom { tieRow(bottom) }
+                    } footer: {
+                        if let nextRoundName, pair.bottom != nil {
+                            Text("Winners meet in the \(nextRoundName)")
+                        }
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .refreshable { await viewModel.refresh() }
+    }
+
+    @ViewBuilder
+    private func finalSections(_ round: BracketRound) -> some View {
+        Section {
+            ForEach(round.matches) { tieRow($0) }
+        } header: {
+            Label("Final", systemImage: "trophy.fill")
+                .foregroundStyle(Color.pitch)
+        }
+        if let thirdPlace {
+            Section {
+                tieRow(thirdPlace)
+            } header: {
+                Label("Third place play-off", systemImage: "medal.fill")
+            }
+        }
+    }
+
+    private func tieRow(_ match: MatchRowModel) -> some View {
+        NavigationLink {
+            MatchDetailView(viewModel: viewModel, matchID: match.id)
+        } label: {
+            KnockoutRowView(row: match)
+        }
+        .listRowBackground(Color(uiColor: .secondarySystemGroupedBackground))
+    }
+
+    /// Matches grouped into bracket pairs; the last group has a single match
+    /// only if the round has an odd count (shouldn't happen in a full bracket).
+    private func pairs(of round: BracketRound) -> [BracketPair] {
+        stride(from: 0, to: round.matches.count, by: 2).map { index in
+            BracketPair(
+                top: round.matches[index],
+                bottom: index + 1 < round.matches.count ? round.matches[index + 1] : nil
+            )
         }
     }
 
     // MARK: Bracket structure
+
+    private static func order(after stage: Stage) -> Stage? {
+        switch stage {
+        case .roundOf32: return .roundOf16
+        case .roundOf16: return .quarterFinal
+        case .quarterFinal: return .semiFinal
+        case .semiFinal: return .final
+        default: return nil
+        }
+    }
 
     /// The official FIFA World Cup 2026 knockout bracket, by match number: each
     /// later-round match mapped to the two matches whose winners feed it (home,
@@ -132,7 +215,7 @@ struct KnockoutBracketView: View {
     }
 }
 
-// MARK: - Round model
+// MARK: - Round / pair models
 
 private struct BracketRound: Identifiable {
     let stage: Stage
@@ -140,137 +223,16 @@ private struct BracketRound: Identifiable {
     var id: Stage { stage }
 }
 
-// MARK: - Page dots
-
-private struct PageDots: View {
-    let count: Int
-    let index: Int
-
-    var body: some View {
-        HStack(spacing: Design.Spacing.small) {
-            ForEach(0..<count, id: \.self) { dot in
-                Capsule()
-                    .fill(dot == index ? Color.pitch : Color.secondary.opacity(0.3))
-                    .frame(width: dot == index ? 18 : 6, height: 6)
-            }
-        }
-        .animation(.snappy, value: index)
-    }
-}
-
-// MARK: - One round (a page)
-
-private struct RoundPage: View {
-    let round: BracketRound
-    let nextRoundName: String?
-    let thirdPlace: MatchRowModel?
-    let viewModel: MatchScheduleViewModel
-
-    /// Matches grouped into bracket pairs; the last group has a single match
-    /// only if the round has an odd count (shouldn't happen in a full bracket).
-    private var pairs: [(top: MatchRowModel, bottom: MatchRowModel?)] {
-        stride(from: 0, to: round.matches.count, by: 2).map { index in
-            (round.matches[index], index + 1 < round.matches.count ? round.matches[index + 1] : nil)
-        }
-    }
-
-    var body: some View {
-        ScrollView {
-            LazyVStack(spacing: Design.Spacing.section) {
-                if round.stage == .final, let finalMatch = round.matches.first {
-                    finalView(finalMatch)
-                } else {
-                    ForEach(pairs, id: \.top.id) { pair in
-                        PairCard(
-                            top: pair.top,
-                            bottom: pair.bottom,
-                            nextRoundName: nextRoundName,
-                            viewModel: viewModel
-                        )
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, Design.Spacing.medium)
-            .padding(.bottom, Design.Spacing.screenBottom)
-        }
-        .scrollIndicators(.hidden)
-        .refreshable { await viewModel.refresh() }
-    }
-
-    private func finalView(_ match: MatchRowModel) -> some View {
-        VStack(spacing: Design.Spacing.sectionLarge) {
-            VStack(spacing: Design.Spacing.section) {
-                Image(systemName: "trophy.fill")
-                    .font(.system(size: 44))
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(Color.pitch)
-                    .padding(.top, Design.Spacing.sectionLarge)
-                card(match)
-            }
-
-            if let thirdPlace {
-                VStack(alignment: .leading, spacing: Design.Spacing.medium) {
-                    Label("Third place play-off", systemImage: "medal.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    card(thirdPlace)
-                }
-            }
-        }
-    }
-
-    private func card(_ match: MatchRowModel) -> some View {
-        TieRow(row: match, viewModel: viewModel)
-            .background(
-                Color(uiColor: .secondarySystemGroupedBackground),
-                in: RoundedRectangle(cornerRadius: Design.Radius.card)
-            )
-    }
-}
-
-// MARK: - A bracket pair (two ties that feed the same next-round match)
-
-private struct PairCard: View {
+private struct BracketPair: Identifiable {
     let top: MatchRowModel
     let bottom: MatchRowModel?
-    let nextRoundName: String?
-    let viewModel: MatchScheduleViewModel
-
-    var body: some View {
-        VStack(spacing: 0) {
-            if let nextRoundName, bottom != nil {
-                HStack(spacing: Design.Spacing.xSmall) {
-                    Spacer()
-                    Text("Winners meet in the \(nextRoundName)")
-                        .font(.caption2.weight(.medium))
-                    Image(systemName: "arrow.turn.right.up")
-                        .font(.caption2)
-                }
-                .foregroundStyle(.tertiary)
-                .padding(.horizontal, Design.Spacing.xLarge)
-                .padding(.top, Design.Spacing.large)
-                .padding(.bottom, Design.Spacing.xSmall)
-            }
-
-            TieRow(row: top, viewModel: viewModel)
-            if let bottom {
-                Divider().padding(.leading, Design.Spacing.xLarge)
-                TieRow(row: bottom, viewModel: viewModel)
-            }
-        }
-        .background(
-            Color(uiColor: .secondarySystemGroupedBackground),
-            in: RoundedRectangle(cornerRadius: Design.Radius.card)
-        )
-    }
+    var id: String { top.id }
 }
 
-// MARK: - A single tie (one match), tappable to detail
+// MARK: - A single tie (one match) row, styled like a Home match row
 
-private struct TieRow: View {
+private struct KnockoutRowView: View {
     let row: MatchRowModel
-    let viewModel: MatchScheduleViewModel
 
     private var homeWon: Bool {
         row.status == .finished && (row.home.score ?? 0) > (row.away.score ?? 0)
@@ -280,48 +242,43 @@ private struct TieRow: View {
     }
 
     var body: some View {
-        NavigationLink {
-            MatchDetailView(viewModel: viewModel, matchID: row.id)
-        } label: {
-            HStack(spacing: Design.Spacing.large) {
-                VStack(spacing: Design.Spacing.medium) {
-                    teamLine(row.home, won: homeWon)
-                    teamLine(row.away, won: awayWon)
-                }
-                trailing
-                    .frame(width: 52)
+        HStack(spacing: Design.Spacing.large) {
+            VStack(spacing: Design.Spacing.medium) {
+                teamLine(row.home, won: homeWon)
+                teamLine(row.away, won: awayWon)
             }
-            .padding(.horizontal, Design.Spacing.xLarge)
-            .padding(.vertical, Design.Spacing.large)
-            .contentShape(Rectangle())
+            trailing
+                .frame(width: 56)
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, Design.Spacing.small)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
 
     private func teamLine(_ side: MatchRowModel.Side, won: Bool) -> some View {
         let decided = !side.flag.isEmpty
-        return HStack(spacing: Design.Spacing.medium) {
+        return HStack(spacing: Design.Spacing.xLarge) {
             Text(side.flag.isEmpty ? "—" : side.flag)
                 .font(.title3)
-                .frame(width: 28, alignment: .center)
+                .frame(width: Design.Size.flagColumn, alignment: .center)
             Text(side.name)
                 .font(.body)
                 .fontWeight(won ? .semibold : .regular)
                 .foregroundStyle(decided ? .primary : .secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
-            Spacer(minLength: Design.Spacing.small)
+            Spacer(minLength: Design.Spacing.medium)
             if row.showsScore, let score = side.score {
                 Text("\(score)")
-                    .font(.body.weight(won ? .bold : .medium).monospacedDigit())
+                    .font(.title2.monospacedDigit())
+                    .fontWeight(won ? .bold : .medium)
                     .foregroundStyle(won ? .primary : .secondary)
+                    .contentTransition(.numericText())
             }
         }
     }
 
-    /// Kickoff time for upcoming ties, FT for finished — no live treatment.
+    /// Kickoff date/time for upcoming ties, FT for finished — no live treatment.
     @ViewBuilder
     private var trailing: some View {
         switch row.status {
@@ -335,8 +292,12 @@ private struct TieRow: View {
             .multilineTextAlignment(.center)
         case .finished:
             Text("FT")
-                .font(.caption.weight(.bold))
+                .font(.caption2.weight(.bold))
+                .textCase(.uppercase)
                 .foregroundStyle(.secondary)
+                .padding(.horizontal, Design.Pill.horizontalPadding)
+                .padding(.vertical, Design.Pill.verticalPadding)
+                .background(.quaternary, in: Capsule())
         case .live:
             EmptyView()
         }
