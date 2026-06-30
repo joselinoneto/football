@@ -104,8 +104,8 @@ private struct SmallMatchView: View {
     }
 
     private func bigTeamLine(_ side: WidgetSide, opponentScore: Int?, status: MatchStatus) -> some View {
-        let won = status == .finished && (side.score ?? 0) > (opponentScore ?? 0)
-        let lost = status == .finished && (side.score ?? 0) < (opponentScore ?? 0)
+        let won = match?.didWin(side) ?? false
+        let lost = status == .finished && !won && !side.flag.isEmpty
         return HStack(spacing: Design.Spacing.medium) {
             Text(side.flag.isEmpty ? "—" : side.flag)
                 .font(.title3)
@@ -114,11 +114,18 @@ private struct SmallMatchView: View {
                 .foregroundStyle(lost ? .secondary : .primary)
             Spacer(minLength: Design.Spacing.small)
             if match?.showsScore == true, let score = side.score {
-                Text("\(score)")
-                    .font(.title2.monospacedDigit())
-                    .fontWeight(won ? .bold : .medium)
-                    .foregroundStyle(lost ? .secondary : .primary)
-                    .contentTransition(.numericText())
+                HStack(alignment: .firstTextBaseline, spacing: 1) {
+                    Text("\(score)")
+                        .font(.title2.monospacedDigit())
+                        .fontWeight(won ? .bold : .medium)
+                        .foregroundStyle(lost ? .secondary : .primary)
+                        .contentTransition(.numericText())
+                    if let pens = side.penaltyScore {
+                        Text("(\(pens))")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }

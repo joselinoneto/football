@@ -8,12 +8,10 @@ import FootballPresentation
 struct WidgetMatchRow: View {
     let match: WidgetMatch
 
-    private var homeLost: Bool {
-        match.status == .finished && (match.home.score ?? 0) < (match.away.score ?? 0)
-    }
-    private var awayLost: Bool {
-        match.status == .finished && (match.away.score ?? 0) < (match.home.score ?? 0)
-    }
+    // A side "lost" when the other side is the recorded winner — works for a
+    // level scoreline settled on penalties, not just a higher score.
+    private var homeLost: Bool { match.didWin(match.away) }
+    private var awayLost: Bool { match.didWin(match.home) }
 
     var body: some View {
         // Mostly a single big scoreline so many rows fit (the large widget shows
@@ -74,22 +72,30 @@ struct WidgetMatchRow: View {
                 .minimumScaleFactor(0.7)
         case .live, .finished:
             HStack(spacing: Design.Spacing.xSmall) {
-                score(match.home.score, dim: homeLost)
+                score(match.home.score, pens: match.home.penaltyScore, dim: homeLost)
                 Text(verbatim: "×")
                     .font(.title3)
                     .foregroundStyle(.tertiary)
-                score(match.away.score, dim: awayLost)
+                score(match.away.score, pens: match.away.penaltyScore, dim: awayLost)
             }
         }
     }
 
-    private func score(_ value: Int?, dim: Bool) -> some View {
-        Text("\(value ?? 0)")
-            .font(.title.weight(.bold).monospacedDigit())
-            .foregroundStyle(match.status == .live ? Color.live : (dim ? .secondary : .primary))
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
-            .contentTransition(.numericText())
+    private func score(_ value: Int?, pens: Int?, dim: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 1) {
+            Text("\(value ?? 0)")
+                .font(.title.weight(.bold).monospacedDigit())
+                .foregroundStyle(match.status == .live ? Color.live : (dim ? .secondary : .primary))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .contentTransition(.numericText())
+            // Shootout score, e.g. "(5)" — kept small so the row still fits.
+            if let pens {
+                Text("(\(pens))")
+                    .font(.caption2.weight(.bold).monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     private var liveLabel: String {
@@ -124,7 +130,8 @@ struct WidgetStatusBadge: View {
                 .font(.caption2.weight(.medium).monospacedDigit())
                 .foregroundStyle(.secondary)
         case .finished:
-            Text("FT")
+            let label = match.decidedBy?.shortLabel ?? ""
+            Text(label.isEmpty ? "FT" : "FT · \(label)")
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
         }

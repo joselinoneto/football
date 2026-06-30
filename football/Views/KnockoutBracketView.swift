@@ -234,12 +234,8 @@ private struct BracketPair: Identifiable {
 private struct KnockoutRowView: View {
     let row: MatchRowModel
 
-    private var homeWon: Bool {
-        row.status == .finished && (row.home.score ?? 0) > (row.away.score ?? 0)
-    }
-    private var awayWon: Bool {
-        row.status == .finished && (row.away.score ?? 0) > (row.home.score ?? 0)
-    }
+    private var homeWon: Bool { row.didWin(row.home) }
+    private var awayWon: Bool { row.didWin(row.away) }
 
     var body: some View {
         HStack(spacing: Design.Spacing.large) {
@@ -269,11 +265,20 @@ private struct KnockoutRowView: View {
                 .minimumScaleFactor(0.85)
             Spacer(minLength: Design.Spacing.medium)
             if row.showsScore, let score = side.score {
-                Text("\(score)")
-                    .font(.title2.monospacedDigit())
-                    .fontWeight(won ? .bold : .medium)
-                    .foregroundStyle(won ? .primary : .secondary)
-                    .contentTransition(.numericText())
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text("\(score)")
+                        .font(.title2.monospacedDigit())
+                        .fontWeight(won ? .bold : .medium)
+                        .foregroundStyle(won ? .primary : .secondary)
+                        .contentTransition(.numericText())
+                    // Shootout score in parentheses, e.g. "(5)".
+                    if let pens = side.penaltyScore {
+                        Text("(\(pens))")
+                            .font(.caption2.monospacedDigit())
+                            .fontWeight(won ? .semibold : .regular)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }
@@ -291,13 +296,21 @@ private struct KnockoutRowView: View {
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
         case .finished:
-            Text("FT")
-                .font(.caption2.weight(.bold))
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, Design.Pill.horizontalPadding)
-                .padding(.vertical, Design.Pill.verticalPadding)
-                .background(.quaternary, in: Capsule())
+            VStack(spacing: 2) {
+                Text("FT")
+                    .font(.caption2.weight(.bold))
+                    .textCase(.uppercase)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, Design.Pill.horizontalPadding)
+                    .padding(.vertical, Design.Pill.verticalPadding)
+                    .background(.quaternary, in: Capsule())
+                // "pens" / "AET" qualifier when the tie went beyond 90 minutes.
+                if let label = row.decidedBy?.shortLabel, !label.isEmpty {
+                    Text(label)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
         case .live:
             EmptyView()
         }

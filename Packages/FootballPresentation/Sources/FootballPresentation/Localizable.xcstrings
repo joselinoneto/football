@@ -541,6 +541,96 @@
           }
         }
       }
+    },
+    "result.afterExtraTime" : {
+      "comment" : "Scoreboard note: knockout tie won in extra time.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "After extra time"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Após a prorrogação"
+          }
+        }
+      }
+    },
+    "result.afterPenalties" : {
+      "comment" : "Scoreboard note: knockout tie won on penalties.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "After penalties"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Após os pênaltis"
+          }
+        }
+      }
+    },
+    "result.fullTime" : {
+      "comment" : "Scoreboard status for a finished match.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Full time"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fim de jogo"
+          }
+        }
+      }
+    },
+    "result.short.extraTime" : {
+      "comment" : "Compact badge: decided in extra time.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "AET"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pror."
+          }
+        }
+      }
+    },
+    "result.short.penalties" : {
+      "comment" : "Compact badge: decided on penalties.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "pens"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pên."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

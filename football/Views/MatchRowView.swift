@@ -110,8 +110,8 @@ struct MatchRowView: View {
 
     private func teamLine(_ side: MatchRowModel.Side, opponentScore: Int?) -> some View {
         let decided = !side.flag.isEmpty
-        let won = row.status == .finished && (side.score ?? 0) > (opponentScore ?? 0)
-        let lost = row.status == .finished && (side.score ?? 0) < (opponentScore ?? 0)
+        let won = row.didWin(side)
+        let lost = row.status == .finished && !won && decided
         let nameColor: Color = decided && !lost ? .primary : .secondary
 
         return HStack(spacing: Design.Spacing.xLarge) {
@@ -125,11 +125,20 @@ struct MatchRowView: View {
                 .lineLimit(1)
             Spacer(minLength: Design.Spacing.medium)
             if row.showsScore, let score = side.score {
-                Text("\(score)")
-                    .font(.title2.monospacedDigit())
-                    .fontWeight(won ? .bold : .medium)
-                    .foregroundStyle(lost ? .secondary : .primary)
-                    .contentTransition(.numericText())
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text("\(score)")
+                        .font(.title2.monospacedDigit())
+                        .fontWeight(won ? .bold : .medium)
+                        .foregroundStyle(lost ? .secondary : .primary)
+                        .contentTransition(.numericText())
+                    // Shootout score in parentheses, e.g. "(5)".
+                    if let pens = side.penaltyScore {
+                        Text("(\(pens))")
+                            .font(.caption.monospacedDigit())
+                            .fontWeight(won ? .semibold : .regular)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }

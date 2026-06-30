@@ -64,8 +64,8 @@ private struct Scoreboard: View {
 
     private func teamLine(_ side: MatchRowModel.Side, opponentScore: Int?) -> some View {
         let decided = !side.flag.isEmpty
-        let won = row.status == .finished && (side.score ?? 0) > (opponentScore ?? 0)
-        let lost = row.status == .finished && (side.score ?? 0) < (opponentScore ?? 0)
+        let won = row.didWin(side)
+        let lost = row.status == .finished && !won && decided
 
         let name = Text(side.name)
             .font(.title3)
@@ -90,11 +90,20 @@ private struct Scoreboard: View {
             }
             Spacer(minLength: Design.Spacing.medium)
             if row.status != .scheduled, let score = side.score {
-                Text("\(score)")
-                    .font(.largeTitle.monospacedDigit())
-                    .fontWeight(won ? .bold : .medium)
-                    .foregroundStyle(lost ? .secondary : .primary)
-                    .contentTransition(.numericText())
+                HStack(alignment: .firstTextBaseline, spacing: Design.Spacing.small) {
+                    Text("\(score)")
+                        .font(.largeTitle.monospacedDigit())
+                        .fontWeight(won ? .bold : .medium)
+                        .foregroundStyle(lost ? .secondary : .primary)
+                        .contentTransition(.numericText())
+                    // Shootout score, e.g. "(5)" alongside the level scoreline.
+                    if let pens = side.penaltyScore {
+                        Text("(\(pens))")
+                            .font(.title3.monospacedDigit())
+                            .fontWeight(won ? .semibold : .regular)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }
@@ -112,7 +121,7 @@ private struct Scoreboard: View {
                     .foregroundStyle(Color.live)
             }
         case .finished:
-            Text("Full time")
+            Text(row.decidedBy?.fullTimeNote ?? String(localized: "Full time"))
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
         case .scheduled:
