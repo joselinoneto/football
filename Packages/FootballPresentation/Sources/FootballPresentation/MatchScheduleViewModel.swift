@@ -46,6 +46,17 @@ public final class MatchScheduleViewModel {
     /// Opens the given match's detail (used by the widget/Live-Activity deep link).
     public func openMatch(id: String) { deepLinkedMatchID = id }
 
+    /// A representative finished match that has a goal timeline — used by
+    /// screenshot automation to land on a populated match-detail screen. Falls
+    /// back to any finished match, then any match at all.
+    public var sampleMatchID: String? {
+        let finished = days.flatMap(\.rows).filter { $0.status == .finished }
+        if let withGoals = finished.first(where: { !(goalsByMatch[$0.id]?.isEmpty ?? true) }) {
+            return withGoals.id
+        }
+        return finished.first?.id ?? days.flatMap(\.rows).first?.id
+    }
+
     /// The grouped days narrowed down to the active filter, dropping any day
     /// left without matching matches.
     public var filteredDays: [MatchDay] {

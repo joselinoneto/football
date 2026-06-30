@@ -1,4 +1,5 @@
 import SwiftUI
+import FootballCore
 import FootballPresentation
 
 /// The app's root: a three-tab layout. Home is the schedule, Matches holds the
@@ -64,6 +65,12 @@ struct RootTabView: View {
         .task {
             await viewModel.start()
         }
+        // Screenshot automation only: once data is loaded, apply launch-argument
+        // overrides (pre-select a favorite team to show the themed accent, and
+        // open a representative match's detail). Inert in normal use.
+        .onChange(of: viewModel.days.isEmpty) { _, isEmpty in
+            if !isEmpty { applyScreenshotLaunchArguments() }
+        }
         .sheet(isPresented: deepLinkBinding) {
             if let id = viewModel.deepLinkedMatchID {
                 NavigationStack {
@@ -75,6 +82,22 @@ struct RootTabView: View {
                         }
                 }
             }
+        }
+    }
+
+    /// Screenshot automation only. `-SeedFavorite <CODE>` pre-selects a favorite
+    /// team so screenshots show the team-tinted accent; `-ShowSampleMatch` opens a
+    /// representative match's detail. Never set in normal use.
+    private func applyScreenshotLaunchArguments() {
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-SeedFavorite"), i + 1 < args.count,
+           appearance.favoriteTeamID == nil,
+           let team = viewModel.allTeams.first(where: { $0.code == args[i + 1] }) {
+            appearance.setFavorite(team)
+        }
+        if args.contains("-ShowSampleMatch"), viewModel.deepLinkedMatchID == nil,
+           let id = viewModel.sampleMatchID {
+            viewModel.openMatch(id: id)
         }
     }
 
