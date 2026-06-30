@@ -12,13 +12,14 @@ struct MatchRowView: View {
                 teamLine(row.home, opponentScore: row.away.score)
                 teamLine(row.away, opponentScore: row.home.score)
             }
+            venueRow
         }
         .padding(.vertical, Design.Spacing.small)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
 
-    // MARK: Header (context + status)
+    // MARK: Header (stage + status)
 
     private var header: some View {
         HStack(spacing: Design.Spacing.small) {
@@ -27,15 +28,25 @@ struct MatchRowView: View {
                     .font(.caption2.weight(.bold))
                     .textCase(.uppercase)
                     .foregroundStyle(Color.pitch)
-                Text(verbatim: "·")
-                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
+            Spacer(minLength: Design.Spacing.medium)
+            trailingDetail
+        }
+    }
+
+    // MARK: Venue (stadium), shown at the bottom of the row
+
+    private var venueRow: some View {
+        HStack(spacing: Design.Spacing.small) {
+            Image(systemName: "mappin.and.ellipse")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
             Text(row.venue)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
-            Spacer(minLength: Design.Spacing.medium)
-            trailingDetail
+            Spacer(minLength: 0)
         }
     }
 
@@ -48,6 +59,8 @@ struct MatchRowView: View {
                     Text(minute)
                         .font(.caption.weight(.bold).monospacedDigit())
                         .foregroundStyle(Color.live)
+                        .lineLimit(1)
+                        .fixedSize()
                 }
                 LiveBadge()
             }
@@ -77,8 +90,10 @@ struct MatchRowView: View {
                     .scaleEffect(pulsing ? Design.Motion.pulseScale : 1)
                     .opacity(pulsing ? Design.Opacity.pulseMin : 1)
                 Text("LIVE")
+                    .lineLimit(1)
             }
             .font(.caption2.bold())
+            .fixedSize()
             .padding(.horizontal, Design.Pill.horizontalPadding)
             .padding(.vertical, Design.Pill.verticalPadding)
             .background(Color.live, in: Capsule())
@@ -95,8 +110,8 @@ struct MatchRowView: View {
 
     private func teamLine(_ side: MatchRowModel.Side, opponentScore: Int?) -> some View {
         let decided = !side.flag.isEmpty
-        let won = row.status == .finished && (side.score ?? 0) > (opponentScore ?? 0)
-        let lost = row.status == .finished && (side.score ?? 0) < (opponentScore ?? 0)
+        let won = row.didWin(side)
+        let lost = row.status == .finished && !won && decided
         let nameColor: Color = decided && !lost ? .primary : .secondary
 
         return HStack(spacing: Design.Spacing.xLarge) {
@@ -110,11 +125,20 @@ struct MatchRowView: View {
                 .lineLimit(1)
             Spacer(minLength: Design.Spacing.medium)
             if row.showsScore, let score = side.score {
-                Text("\(score)")
-                    .font(.title2.monospacedDigit())
-                    .fontWeight(won ? .bold : .medium)
-                    .foregroundStyle(lost ? .secondary : .primary)
-                    .contentTransition(.numericText())
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text("\(score)")
+                        .font(.title2.monospacedDigit())
+                        .fontWeight(won ? .bold : .medium)
+                        .foregroundStyle(lost ? .secondary : .primary)
+                        .contentTransition(.numericText())
+                    // Shootout score in parentheses, e.g. "(5)".
+                    if let pens = side.penaltyScore {
+                        Text("(\(pens))")
+                            .font(.caption.monospacedDigit())
+                            .fontWeight(won ? .semibold : .regular)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }

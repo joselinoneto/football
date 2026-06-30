@@ -16,6 +16,12 @@ public final class StoredMatch {
     public var awayScore: Int?
     public var statusRaw: String
     public var minute: String?
+    // Knockout result detail. New optional attributes — SwiftData migrates
+    // existing stores lightweightly (they read back as nil until refreshed).
+    public var homePenalties: Int?
+    public var awayPenalties: Int?
+    public var winnerTeamID: String?
+    public var decidedByRaw: String?
 
     public init(
         remoteID: String,
@@ -29,7 +35,11 @@ public final class StoredMatch {
         homeScore: Int?,
         awayScore: Int?,
         statusRaw: String,
-        minute: String? = nil
+        minute: String? = nil,
+        homePenalties: Int? = nil,
+        awayPenalties: Int? = nil,
+        winnerTeamID: String? = nil,
+        decidedByRaw: String? = nil
     ) {
         self.remoteID = remoteID
         self.number = number
@@ -43,6 +53,10 @@ public final class StoredMatch {
         self.awayScore = awayScore
         self.statusRaw = statusRaw
         self.minute = minute
+        self.homePenalties = homePenalties
+        self.awayPenalties = awayPenalties
+        self.winnerTeamID = winnerTeamID
+        self.decidedByRaw = decidedByRaw
     }
 }
 
@@ -60,7 +74,11 @@ extension StoredMatch {
             homeScore: match.homeScore,
             awayScore: match.awayScore,
             statusRaw: match.status.rawValue,
-            minute: match.minute
+            minute: match.minute,
+            homePenalties: match.homePenalties,
+            awayPenalties: match.awayPenalties,
+            winnerTeamID: match.winnerTeamID,
+            decidedByRaw: match.decidedBy?.rawValue
         )
     }
 
@@ -76,6 +94,10 @@ extension StoredMatch {
         awayScore = match.awayScore
         statusRaw = match.status.rawValue
         minute = match.minute
+        homePenalties = match.homePenalties
+        awayPenalties = match.awayPenalties
+        winnerTeamID = match.winnerTeamID
+        decidedByRaw = match.decidedBy?.rawValue
     }
 
     var match: Match {
@@ -91,7 +113,11 @@ extension StoredMatch {
             homeScore: homeScore,
             awayScore: awayScore,
             status: MatchStatus(rawValue: statusRaw) ?? .scheduled,
-            minute: minute
+            minute: minute,
+            homePenalties: homePenalties,
+            awayPenalties: awayPenalties,
+            winnerTeamID: winnerTeamID,
+            decidedBy: decidedByRaw.flatMap(DecidedBy.init(rawValue:))
         )
     }
 }

@@ -4,6 +4,45 @@ All notable user-facing changes to **Just Football**. Newest first.
 
 ---
 
+## 1.3
+
+The knockout stage, a team you call your own, and a roomier layout.
+
+### ✨ What's new
+
+- **Knockout bracket.** The new **Matches** tab lays out every knockout round, from
+  the round of 32 through to the final, and fills in as teams advance.
+  - Ties settled in extra time or on penalties are marked as such — **"After extra
+    time" / "After penalties"** — with the shootout score shown alongside the result.
+- **Pick a favorite team.** In **Settings**, choose a team and the app takes on its
+  flag's color as the accent — across the app, the Home Screen widget, and the Live
+  Activity. Change it any time, or go back to the default pitch green.
+- **A tab for everything.** The app is now organized into four tabs:
+  - **Home** — the day-by-day schedule.
+  - **Matches** — the knockout bracket.
+  - **Group Stage** — the group tables.
+  - **Settings** — your favorite team and the About page.
+- **Roomier schedule.** The Home schedule was rebuilt as a cleaner, Home-style
+  list that's easier to scan.
+
+### 🧪 What to test (beta)
+
+- Open the **Matches** tab and scroll the knockout rounds; confirm decided ties show
+  "After extra time"/"After penalties" and the shootout score.
+- In **Settings → Favorite team**, pick a team and confirm the accent color changes
+  everywhere — app, widget, and any Live Activity — and that clearing it returns to
+  green.
+- Switch between all four tabs and confirm each loads its content.
+- Verify everything in both English and Brazilian Portuguese, light and dark.
+
+### 🔧 Under the hood
+
+- The group standings load once instead of on every refresh.
+- The Watch app and widget now show the same penalty/extra-time result notes as the
+  phone.
+
+---
+
 ## 1.2 (build 3)
 
 Home Screen widgets, Live Activities, and a refreshed schedule.

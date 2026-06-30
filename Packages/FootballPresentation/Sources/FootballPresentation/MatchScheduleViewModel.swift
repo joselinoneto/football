@@ -25,6 +25,10 @@ public final class MatchScheduleViewModel {
     private(set) var statsByMatch: [String: [MatchStat]] = [:]
     /// Group standings, shown in the Matches screen's Standings segment.
     public private(set) var standingsGroups: [StandingsGroup] = []
+    /// Set once the standings have been fetched from the network, so a reappear
+    /// of the Standings section doesn't refetch. The group stage is complete and
+    /// these tables no longer change, so a single load per session is enough.
+    private var standingsRefreshed = false
     private var teamsByID: [String: Team] = [:]
     private var matchesByID: [String: Match] = [:]
     private var squadsByTeam: [String: [SquadMember]] = [:]
@@ -41,6 +45,17 @@ public final class MatchScheduleViewModel {
 
     /// Opens the given match's detail (used by the widget/Live-Activity deep link).
     public func openMatch(id: String) { deepLinkedMatchID = id }
+
+    /// A representative finished match that has a goal timeline — used by
+    /// screenshot automation to land on a populated match-detail screen. Falls
+    /// back to any finished match, then any match at all.
+    public var sampleMatchID: String? {
+        let finished = days.flatMap(\.rows).filter { $0.status == .finished }
+        if let withGoals = finished.first(where: { !(goalsByMatch[$0.id]?.isEmpty ?? true) }) {
+            return withGoals.id
+        }
+        return finished.first?.id ?? days.flatMap(\.rows).first?.id
+    }
 
     /// The grouped days narrowed down to the active filter, dropping any day
     /// left without matching matches.
@@ -111,6 +126,12 @@ public final class MatchScheduleViewModel {
         teamsByID[teamID].map(TeamRowModel.init)
     }
 
+    /// Every loaded team, ordered by group then name — for the favorite-team
+    /// picker in Settings. Empty until the first store load completes.
+    public var allTeams: [Team] {
+        teamsByID.values.sorted { ($0.group, $0.name) < ($1.group, $1.name) }
+    }
+
     /// The team's roster, split into goalkeeper/defender/midfielder/attacker
     /// sections, each ordered by shirt number.
     public func squadSections(for teamID: String) -> [SquadLineSection] {
@@ -156,14 +177,17 @@ public final class MatchScheduleViewModel {
     }
 
     /// Refreshes just the standings, then updates the standings groups in place.
-    /// Driven by the Standings section appearing (not the polling loop), so it
-    /// runs every time that section is presented — even if already populated —
-    /// and avoids a per-cycle standings request while matches are live.
+    /// Driven by the Standings section appearing (not the polling loop). The
+    /// group stage is finished and these tables no longer change, so it loads
+    /// once per session — a reappear of the section is a no-op (the store-backed
+    /// `standingsGroups` is already populated from the initial load).
     public func refreshStandings() async {
+        guard !standingsRefreshed else { return }
         try? await service.refreshStandings()
         if let standings = try? await service.standings() {
             standingsGroups = Self.standingsGroups(standings, teamsByID: teamsByID)
         }
+        standingsRefreshed = true
     }
 
     /// Lightweight refresh for background app refresh: pulls just scores
@@ -360,9 +384,13 @@ public struct MatchRowModel: Identifiable {
         /// Three-letter country code, e.g. "BRA"; empty when undecided.
         public let code: String
         public let score: Int?
+        /// Penalty-shootout score; non-nil only for a tie settled on penalties.
+        public let penaltyScore: Int?
     }
 
     public let id: String
+    /// Official match number 1–104.
+    public let number: Int
     public let kickoff: Date
     public let stage: Stage
     public let venue: String
@@ -371,24 +399,34 @@ public struct MatchRowModel: Identifiable {
     public let minute: String?
     public let home: Side
     public let away: Side
+    /// Linked Team record ID of the winner; nil for a regulation draw or a
+    /// match that isn't finished yet.
+    public let winnerTeamID: String?
+    /// How the result was settled; nil until the match is finished.
+    public let decidedBy: DecidedBy?
 
     public init(match: Match, teamsByID: [String: Team]) {
         id = match.id
+        number = match.number
         kickoff = match.kickoff
         stage = match.stage
         venue = match.venue
         status = match.status
         minute = match.minute
+        winnerTeamID = match.winnerTeamID
+        decidedBy = match.decidedBy
         home = Side(
             teamID: match.homeTeamID,
             fallbackName: match.titleSides?.home,
             score: match.homeScore,
+            penaltyScore: match.homePenalties,
             teamsByID: teamsByID
         )
         away = Side(
             teamID: match.awayTeamID,
             fallbackName: match.titleSides?.away,
             score: match.awayScore,
+            penaltyScore: match.awayPenalties,
             teamsByID: teamsByID
         )
     }
@@ -398,12 +436,33 @@ public struct MatchRowModel: Identifiable {
     }
 
     public var showsScore: Bool { status != .scheduled }
+
+    /// True when the tie was settled by a penalty shootout (both sides carry a
+    /// shootout score). Used to render the "(5–4)" detail next to the scores.
+    public var wentToPenalties: Bool {
+        home.penaltyScore != nil && away.penaltyScore != nil
+    }
+
+    /// Whether `side` won, using the recorded winner when present (so a
+    /// shootout win on a level scoreline still highlights correctly) and
+    /// falling back to the scoreline for older records without a winner link.
+    public func didWin(_ side: Side) -> Bool {
+        guard status == .finished else { return false }
+        if let winnerTeamID, let teamID = side.teamID {
+            return teamID == winnerTeamID
+        }
+        let mine = side.score ?? 0
+        let theirs = (side.teamID == home.teamID ? away.score : home.score) ?? 0
+        return mine > theirs
+    }
 }
 
 extension MatchRowModel.Side {
-    init(teamID: String?, fallbackName: String?, score: Int?, teamsByID: [String: Team]) {
+    init(teamID: String?, fallbackName: String?, score: Int?, penaltyScore: Int?,
+         teamsByID: [String: Team]) {
         if let teamID, let team = teamsByID[teamID] {
-            self.init(teamID: teamID, flag: team.flag, name: team.name, code: team.code, score: score)
+            self.init(teamID: teamID, flag: team.flag, name: team.name, code: team.code,
+                      score: score, penaltyScore: penaltyScore)
         } else {
             // Knockout slot not decided yet, e.g. "Winner Match 74".
             self.init(
@@ -411,7 +470,8 @@ extension MatchRowModel.Side {
                 flag: "",
                 name: fallbackName ?? String(localized: "To be decided", bundle: .module),
                 code: "",
-                score: score
+                score: score,
+                penaltyScore: penaltyScore
             )
         }
     }
