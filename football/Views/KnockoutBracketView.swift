@@ -123,6 +123,18 @@ struct KnockoutBracketView: View {
 
     @ViewBuilder
     private func finalSections(_ round: BracketRound) -> some View {
+        // Once the Final is played, crown the winner above the fixtures with a
+        // tappable banner into the dedicated Champion screen.
+        if let champion = viewModel.champion {
+            Section {
+                NavigationLink {
+                    ChampionView(viewModel: viewModel, champion: champion)
+                } label: {
+                    ChampionBanner(champion: champion)
+                }
+                .listRowBackground(Color(uiColor: .secondarySystemGroupedBackground))
+            }
+        }
         Section {
             ForEach(round.matches) { tieRow($0) }
         } header: {
@@ -227,6 +239,38 @@ private struct BracketPair: Identifiable {
     let top: MatchRowModel
     let bottom: MatchRowModel?
     var id: String { top.id }
+}
+
+// MARK: - Champion banner (top of the Final round once the trophy is lifted)
+
+private struct ChampionBanner: View {
+    let champion: ChampionModel
+
+    var body: some View {
+        HStack(spacing: Design.Spacing.large) {
+            Text(champion.flag.isEmpty ? "🏆" : champion.flag)
+                .font(.largeTitle)
+                .frame(width: Design.Size.flagColumn, alignment: .center)
+            VStack(alignment: .leading, spacing: Design.Spacing.xxSmall) {
+                Text("Champions")
+                    .font(.caption.weight(.bold))
+                    .textCase(.uppercase)
+                    .tracking(1.5)
+                    .foregroundStyle(Color.gold)
+                Text(champion.name)
+                    .font(.title3.weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            Spacer(minLength: Design.Spacing.medium)
+            Image(systemName: "trophy.fill")
+                .font(.title3)
+                .foregroundStyle(Color.gold)
+        }
+        .padding(.vertical, Design.Spacing.small)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(champion.name), Champions"))
+    }
 }
 
 // MARK: - A single tie (one match) row, styled like a Home match row

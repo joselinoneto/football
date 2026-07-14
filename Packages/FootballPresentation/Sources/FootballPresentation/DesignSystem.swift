@@ -51,6 +51,8 @@ public enum Design {
         public static let standingPointsColumn: CGFloat = 32
         /// Squad shirt-number column.
         public static let squadNumberColumn: CGFloat = 28
+        /// Diameter of the W/D/L result badge on the team detail screen.
+        public static let outcomeBadge: CGFloat = 24
         /// Possession/stat comparison bar height in match detail.
         public static let statBarHeight: CGFloat = 6
     }

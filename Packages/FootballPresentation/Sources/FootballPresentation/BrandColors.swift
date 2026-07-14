@@ -36,6 +36,23 @@ public extension Color {
     /// Attention color for in-progress matches. A touch warmer and softer than
     /// system red so a tinted row reads as "happening now" without shouting.
     static let live = Color(.sRGB, red: 0.85, green: 0.18, blue: 0.22, opacity: 1)
+
+    /// Celebratory gold for the tournament champion surfaces (the Champion
+    /// screen and its Matches-tab banner). A warm metallic that reads on the
+    /// grouped-background cards; brightened in dark mode so it stays luminous.
+    static let gold: Color = {
+        #if os(watchOS)
+        return Color(.sRGB, red: 0.98, green: 0.78, blue: 0.30, opacity: 1)
+        #elseif canImport(UIKit)
+        return Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.98, green: 0.78, blue: 0.30, alpha: 1)
+                : UIColor(red: 0.72, green: 0.53, blue: 0.05, alpha: 1)
+        })
+        #else
+        return Color(.sRGB, red: 0.72, green: 0.53, blue: 0.05, opacity: 1)
+        #endif
+    }()
 }
 
 /// Resolves `Color.pitch` from the stored favorite-team color, caching the built

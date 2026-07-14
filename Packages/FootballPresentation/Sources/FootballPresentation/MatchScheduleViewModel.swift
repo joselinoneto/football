@@ -126,10 +126,49 @@ public final class MatchScheduleViewModel {
         teamsByID[teamID].map(TeamRowModel.init)
     }
 
+    /// The tournament champion, resolved from a finished Final that has a
+    /// recorded winner. `nil` until the Final is played — which is exactly what
+    /// gates the celebratory Champion screen shown atop the knockout Final round.
+    public var champion: ChampionModel? {
+        guard let final = days.flatMap(\.rows)
+            .first(where: { $0.stage == .final && $0.status == .finished }),
+              let winnerID = final.winnerTeamID else { return nil }
+        let winnerIsHome = final.home.teamID == winnerID
+        let winner = winnerIsHome ? final.home : final.away
+        let runnerUp = winnerIsHome ? final.away : final.home
+        // Guard the winner is a resolved team, so the celebration can link to it.
+        guard winner.teamID != nil else { return nil }
+        return ChampionModel(
+            teamID: winnerID,
+            name: winner.name,
+            flag: winner.flag,
+            runnerUpName: runnerUp.name,
+            runnerUpFlag: runnerUp.flag,
+            score: winner.score,
+            runnerUpScore: runnerUp.score,
+            penaltyScore: winner.penaltyScore,
+            runnerUpPenaltyScore: runnerUp.penaltyScore,
+            decidedBy: final.decidedBy,
+            venue: final.venue,
+            finalMatchID: final.id,
+            highlights: goalsByMatch[final.id] ?? []
+        )
+    }
+
     /// Every loaded team, ordered by group then name — for the favorite-team
     /// picker in Settings. Empty until the first store load completes.
     public var allTeams: [Team] {
         teamsByID.values.sorted { ($0.group, $0.name) < ($1.group, $1.name) }
+    }
+
+    /// Every match the team has featured in, most-recent first — the results
+    /// list on the team detail screen. Reads the same store-backed rows as the
+    /// schedule, so it reflects live updates while the screen is open.
+    public func matches(for teamID: String) -> [TeamMatchRowModel] {
+        days.flatMap(\.rows)
+            .filter { $0.home.teamID == teamID || $0.away.teamID == teamID }
+            .sorted { $0.kickoff > $1.kickoff }
+            .map { TeamMatchRowModel(row: $0, teamID: teamID) }
     }
 
     /// The team's roster, split into goalkeeper/defender/midfielder/attacker
@@ -649,6 +688,19 @@ public struct GoalRowModel: Identifiable {
         self.isHome = isHome
     }
 
+    /// Direct initializer for constructing rows outside the view model — e.g.
+    /// SwiftUI previews of the Champion highlights.
+    public init(id: String, minute: String, scorer: String, type: GoalType,
+                flag: String, isHome: Bool) {
+        self.id = id
+        self.minute = minute
+        self.sortKey = Self.sortKey(minute)
+        self.scorer = scorer
+        self.type = type
+        self.flag = flag
+        self.isHome = isHome
+    }
+
     /// "90+2'" → 9002, "90'" → 9000, so stoppage-time goals order correctly.
     private static func sortKey(_ minute: String) -> Int {
         let parts = minute.replacingOccurrences(of: "'", with: "").split(separator: "+")
@@ -709,6 +761,69 @@ public struct StandingRowModel: Identifiable {
     }
 }
 
+// MARK: - Champion presentation
+
+/// The tournament winner, resolved for the celebratory Champion screen: who
+/// lifted the trophy, the Final scoreline (champion first), and the goals that
+/// decided it. Built by `MatchScheduleViewModel.champion` from the finished
+/// Final and its goal timeline.
+public struct ChampionModel: Identifiable {
+    /// Champion Team record ID — the link target for the team detail screen.
+    public let teamID: String
+    public let name: String
+    public let flag: String
+    public let runnerUpName: String
+    public let runnerUpFlag: String
+    /// Final scoreline, champion first. After-extra-time score when it went long.
+    public let score: Int?
+    public let runnerUpScore: Int?
+    /// Shootout scores, non-nil only for a Final settled on penalties.
+    public let penaltyScore: Int?
+    public let runnerUpPenaltyScore: Int?
+    public let decidedBy: DecidedBy?
+    public let venue: String
+    public let finalMatchID: String
+    /// Goals scored in the Final, minute-ordered — the celebration highlights.
+    public let highlights: [GoalRowModel]
+
+    public init(
+        teamID: String,
+        name: String,
+        flag: String,
+        runnerUpName: String,
+        runnerUpFlag: String,
+        score: Int?,
+        runnerUpScore: Int?,
+        penaltyScore: Int?,
+        runnerUpPenaltyScore: Int?,
+        decidedBy: DecidedBy?,
+        venue: String,
+        finalMatchID: String,
+        highlights: [GoalRowModel]
+    ) {
+        self.teamID = teamID
+        self.name = name
+        self.flag = flag
+        self.runnerUpName = runnerUpName
+        self.runnerUpFlag = runnerUpFlag
+        self.score = score
+        self.runnerUpScore = runnerUpScore
+        self.penaltyScore = penaltyScore
+        self.runnerUpPenaltyScore = runnerUpPenaltyScore
+        self.decidedBy = decidedBy
+        self.venue = venue
+        self.finalMatchID = finalMatchID
+        self.highlights = highlights
+    }
+
+    public var id: String { teamID }
+
+    /// True when the Final was settled by a shootout (both shootout scores set).
+    public var wentToPenalties: Bool {
+        penaltyScore != nil && runnerUpPenaltyScore != nil
+    }
+}
+
 // MARK: - Team / squad presentation
 
 public struct TeamRowModel: Identifiable {
@@ -724,6 +839,58 @@ public struct TeamRowModel: Identifiable {
         code = team.code
         flag = team.flag
         group = team.group
+    }
+}
+
+/// One of a team's matches, seen from that team's side: the opponent, the
+/// scoreline (this team first), and whether they won — for the results list on
+/// the team detail screen. Built from a resolved `MatchRowModel` plus the team
+/// whose page is being shown.
+public struct TeamMatchRowModel: Identifiable {
+    public enum Outcome: Sendable { case win, draw, loss }
+
+    /// Match record ID — also the link target for the match detail screen.
+    public let id: String
+    public let kickoff: Date
+    public let stage: Stage
+    public let status: MatchStatus
+    public let opponentFlag: String
+    public let opponentName: String
+    /// Scoreline from this team's perspective.
+    public let teamScore: Int?
+    public let opponentScore: Int?
+    /// Shootout scores (this team first); non-nil only for a tie on penalties.
+    public let teamPenalties: Int?
+    public let opponentPenalties: Int?
+    public let decidedBy: DecidedBy?
+    /// The result from this team's perspective; nil until the match is finished.
+    public let outcome: Outcome?
+
+    init(row: MatchRowModel, teamID: String) {
+        let isHome = row.home.teamID == teamID
+        let team = isHome ? row.home : row.away
+        let opponent = isHome ? row.away : row.home
+        id = row.id
+        kickoff = row.kickoff
+        stage = row.stage
+        status = row.status
+        opponentFlag = opponent.flag
+        opponentName = opponent.name
+        teamScore = team.score
+        opponentScore = opponent.score
+        teamPenalties = team.penaltyScore
+        opponentPenalties = opponent.penaltyScore
+        decidedBy = row.decidedBy
+        if row.status == .finished {
+            outcome = row.didWin(team) ? .win : (row.didWin(opponent) ? .loss : .draw)
+        } else {
+            outcome = nil
+        }
+    }
+
+    /// Whether both sides carry a shootout score, so the tie went to penalties.
+    public var wentToPenalties: Bool {
+        teamPenalties != nil && opponentPenalties != nil
     }
 }
 
