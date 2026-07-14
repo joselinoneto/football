@@ -45,11 +45,12 @@ public final class PreviewFootballService: FootballService {
                 homeScore: 2, awayScore: 1, status: .live, minute: "67'"
             ),
             Match(
-                id: "recM3", number: 104, title: "Winner Match 102 vs Winner Match 103",
-                homeTeamID: nil, awayTeamID: nil,
-                kickoff: now.addingTimeInterval(36 * 24 * 3600),
+                id: "recM3", number: 104, title: "Brazil vs Morocco",
+                homeTeamID: "recBRA", awayTeamID: "recMAR",
+                kickoff: now.addingTimeInterval(-24 * 3600),
                 stage: .final, venue: "MetLife Stadium, New York",
-                homeScore: nil, awayScore: nil, status: .scheduled
+                homeScore: 2, awayScore: 1, status: .finished,
+                winnerTeamID: "recBRA", decidedBy: .regulation
             )
         ]
     }
@@ -67,7 +68,13 @@ public final class PreviewFootballService: FootballService {
             Goal(id: "recG5", matchNumber: 2, matchID: "recM2", teamID: "recMAR",
                  scorer: "Y. En-Nesyri", minute: "41'", type: .penalty),
             Goal(id: "recG6", matchNumber: 2, matchID: "recM2", teamID: "recBRA",
-                 scorer: "Rodrygo", minute: "67'", type: .goal)
+                 scorer: "Rodrygo", minute: "67'", type: .goal),
+            Goal(id: "recG7", matchNumber: 104, matchID: "recM3", teamID: "recBRA",
+                 scorer: "Vinícius Jr.", minute: "31'", type: .goal),
+            Goal(id: "recG8", matchNumber: 104, matchID: "recM3", teamID: "recMAR",
+                 scorer: "Y. En-Nesyri", minute: "58'", type: .goal),
+            Goal(id: "recG9", matchNumber: 104, matchID: "recM3", teamID: "recBRA",
+                 scorer: "Rodrygo", minute: "84'", type: .goal)
         ]
     }
 
