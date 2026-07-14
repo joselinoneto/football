@@ -4,6 +4,37 @@ All notable user-facing changes to **Just Football**. Newest first.
 
 ---
 
+## 1.4
+
+The tournament reaches its finish — a champion to crown, and every team's road to it.
+
+### ✨ What's new
+
+- **Champions.** Once the final is played, a new golden **Champions** screen crowns
+  the winner — with the final result and the goals that decided it. Tap the champion
+  to jump straight to their squad.
+  - A **Champions** banner appears at the top of the **Final** round in the Matches
+    tab, so the winner is one tap away. Nothing shows until the trophy is lifted.
+- **Every team's results.** Each team page now lists all of its matches, from the
+  group stage through the knockouts, with a **Win / Draw / Loss** marker and the
+  score (shootout results included). Tap any game to open its full detail.
+
+### 🧪 What to test (beta)
+
+- With the final decided, open **Matches → Final** and confirm the **Champions**
+  banner appears; tap it and check the trophy screen shows the final result, the
+  goal highlights, and that tapping the champion opens their squad.
+- Open a few team pages (e.g. from a match's team name) and confirm the **Matches**
+  list shows every game, correct W/D/L badges, and that each row opens the match.
+- Verify everything in both English and Brazilian Portuguese, light and dark.
+
+### 🔧 Under the hood
+
+- The Champions screen and each team's results read the same live-updating data as
+  the schedule, so scores stay current while the screen is open.
+
+---
+
 ## 1.3
 
 The knockout stage, a team you call your own, and a roomier layout.
