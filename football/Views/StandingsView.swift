@@ -14,8 +14,9 @@ struct StandingsList: View {
 
     var body: some View {
         content
-            // Standings are not on the polling loop; refresh them whenever this
-            // section is presented (re-runs each time the section reappears).
+            // Standings are not on the polling loop. The group stage is done and
+            // these tables no longer change, so this loads once per session; the
+            // view model makes a reappear of the section a no-op.
             .task { await viewModel.refreshStandings() }
     }
 

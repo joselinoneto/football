@@ -55,8 +55,8 @@ struct WatchMatchRowView: View {
 
     private func teamLine(_ side: MatchRowModel.Side, opponentScore: Int?) -> some View {
         let decided = !side.flag.isEmpty
-        let won = row.status == .finished && (side.score ?? 0) > (opponentScore ?? 0)
-        let lost = row.status == .finished && (side.score ?? 0) < (opponentScore ?? 0)
+        let won = row.didWin(side)
+        let lost = row.status == .finished && !won && decided
 
         return HStack(spacing: Design.Spacing.medium) {
             Text(side.flag.isEmpty ? "—" : side.flag)
@@ -68,11 +68,18 @@ struct WatchMatchRowView: View {
                 .lineLimit(1)
             Spacer(minLength: Design.Spacing.xSmall)
             if row.showsScore, let score = side.score {
-                Text("\(score)")
-                    .font(.title3.monospacedDigit())
-                    .fontWeight(won ? .bold : .medium)
-                    .foregroundStyle(lost ? .secondary : .primary)
-                    .contentTransition(.numericText())
+                HStack(alignment: .firstTextBaseline, spacing: 1) {
+                    Text("\(score)")
+                        .font(.title3.monospacedDigit())
+                        .fontWeight(won ? .bold : .medium)
+                        .foregroundStyle(lost ? .secondary : .primary)
+                        .contentTransition(.numericText())
+                    if let pens = side.penaltyScore {
+                        Text("(\(pens))")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }

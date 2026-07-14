@@ -39,8 +39,12 @@ struct MatchFields: Decodable, Sendable {
     let venue: String?
     let homeScore: Int?
     let awayScore: Int?
+    let homePenalties: Int?
+    let awayPenalties: Int?
     let status: String?
     let minute: String?
+    let winner: [String]?
+    let decidedBy: String?
 
     enum CodingKeys: String, CodingKey {
         case title = "Match"
@@ -53,14 +57,21 @@ struct MatchFields: Decodable, Sendable {
         case venue = "Venue"
         case homeScore = "Home Score"
         case awayScore = "Away Score"
+        case homePenalties = "Home Pens"
+        case awayPenalties = "Away Pens"
         case status = "Status"
         case minute = "Minute"
+        case winner = "Winner"
+        case decidedBy = "Decided By"
     }
 
+    // "Decided By" is an enum localized client-side (like Stage/Status), so the
+    // pt-BR variant isn't requested — one set of fields serves every locale.
     static func requestedFields(for locale: ContentLocale) -> [String] {
         var fields = [
             "Match", "Match No", "Home Team", "Away Team", "Kickoff",
-            "Stage", "Venue", "Home Score", "Away Score", "Status", "Minute"
+            "Stage", "Venue", "Home Score", "Away Score", "Home Pens",
+            "Away Pens", "Status", "Minute", "Winner", "Decided By"
         ]
         if locale == .brazilianPortuguese {
             fields.append("Match pt-BR")
@@ -132,7 +143,11 @@ extension Match {
             homeScore: fields.homeScore,
             awayScore: fields.awayScore,
             status: fields.status.flatMap(MatchStatus.init(rawValue:)) ?? .scheduled,
-            minute: fields.minute
+            minute: fields.minute,
+            homePenalties: fields.homePenalties,
+            awayPenalties: fields.awayPenalties,
+            winnerTeamID: fields.winner?.first,
+            decidedBy: fields.decidedBy.flatMap(DecidedBy.init(rawValue:))
         )
     }
 }

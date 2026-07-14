@@ -6,9 +6,13 @@ The simplest way to follow the 2026 international football tournament on iOS: al
 
 No ads. No accounts. No tracking. Just football.
 
-| Schedule | About | Dark mode |
+| Schedule | Knockout | Group Stage |
 |---|---|---|
-| ![Schedule](docs/screenshots/en/iphone/01-schedule.png) | ![About](docs/screenshots/en/iphone/02-about.png) | ![Dark mode](docs/screenshots/en/iphone/03-schedule-dark.png) |
+| ![Schedule](docs/screenshots/en/iphone/01-home.png) | ![Knockout](docs/screenshots/en/iphone/02-knockout.png) | ![Group Stage](docs/screenshots/en/iphone/03-groups.png) |
+
+| Match detail | Settings | Dark mode |
+|---|---|---|
+| ![Match detail](docs/screenshots/en/iphone/04-match.png) | ![Settings](docs/screenshots/en/iphone/05-settings.png) | ![Dark mode](docs/screenshots/en/iphone/06-home-dark.png) |
 
 | Home Screen widgets | Apple Watch |
 |---|---|
@@ -21,6 +25,9 @@ No ads. No accounts. No tracking. Just football.
 - Live matches flagged the moment they start, with the running match clock, and final scores as soon as the whistle blows
 - Live scores and goals refresh on their own while a match is in play — no need to pull
 - Tap any match for its goal-by-goal timeline: scorer, minute, and penalty/own-goal markers
+- **Knockout bracket** in its own tab — every round from the round of 32 to the final, with extra-time and penalty-shootout results marked
+- **Group tables** for all 12 groups in the Group Stage tab
+- **Pick a favorite team** in Settings and the app, widget, and Live Activity take on its flag's color as the accent
 - Every stage clearly labelled, from the group phase to the final, with venues
 - Works offline — the schedule lives on your device and refreshes when you open the app
 - **Home Screen widgets** in three sizes — flag, country code, and score per team. The small widget follows the match that matters now (live, else the next one up); the medium and large show today's fixtures, or a team you follow with its last results and upcoming games. Group-stage matches show the group letter. They refresh on their own and update when you open the app.

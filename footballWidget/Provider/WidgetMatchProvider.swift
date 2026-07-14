@@ -11,16 +11,20 @@ struct WidgetSide {
     let flag: String
     let code: String
     let score: Int?
+    /// Penalty-shootout score; non-nil only for a tie settled on penalties.
+    let penaltyScore: Int?
 }
 
 extension WidgetSide {
-    init(teamID: String?, score: Int?, fallback: String?, teamsByID: [String: Team]) {
+    init(teamID: String?, score: Int?, penaltyScore: Int?, fallback: String?,
+         teamsByID: [String: Team]) {
         if let teamID, let team = teamsByID[teamID] {
-            self.init(teamID: teamID, flag: team.flag, code: team.code, score: score)
+            self.init(teamID: teamID, flag: team.flag, code: team.code,
+                      score: score, penaltyScore: penaltyScore)
         } else {
             // Undecided knockout slot (e.g. "Winner Match 74") — no flag yet.
             let code = fallback.map { String($0.prefix(3)).uppercased() } ?? "—"
-            self.init(teamID: nil, flag: "", code: code, score: score)
+            self.init(teamID: nil, flag: "", code: code, score: score, penaltyScore: penaltyScore)
         }
     }
 }
@@ -36,6 +40,10 @@ struct WidgetMatch: Identifiable {
     let away: WidgetSide
     /// Group letter (A–L) for group-stage matches; nil for knockout games.
     let group: String?
+    /// Linked Team record ID of the winner; nil for a draw or unfinished match.
+    let winnerTeamID: String?
+    /// How the result was settled; nil until finished.
+    let decidedBy: DecidedBy?
 
     init(match: Match, teamsByID: [String: Team]) {
         id = match.id
@@ -44,6 +52,8 @@ struct WidgetMatch: Identifiable {
         venue = match.venue
         status = match.status
         minute = match.minute
+        winnerTeamID = match.winnerTeamID
+        decidedBy = match.decidedBy
         // Both sides of a group game share a group letter; take it from
         // whichever team is already decided.
         group = match.stage == .group
@@ -53,13 +63,27 @@ struct WidgetMatch: Identifiable {
                 .first
             : nil
         home = WidgetSide(teamID: match.homeTeamID, score: match.homeScore,
+                          penaltyScore: match.homePenalties,
                           fallback: match.titleSides?.home, teamsByID: teamsByID)
         away = WidgetSide(teamID: match.awayTeamID, score: match.awayScore,
+                          penaltyScore: match.awayPenalties,
                           fallback: match.titleSides?.away, teamsByID: teamsByID)
     }
 
     var showsScore: Bool { status != .scheduled }
     var teamIDs: [String] { [home.teamID, away.teamID].compactMap { $0 } }
+
+    /// Whether `side` won — by recorded winner when present (so a shootout win
+    /// on a level scoreline still highlights), else by the scoreline.
+    func didWin(_ side: WidgetSide) -> Bool {
+        guard status == .finished else { return false }
+        if let winnerTeamID, let teamID = side.teamID {
+            return teamID == winnerTeamID
+        }
+        let mine = side.score ?? 0
+        let theirs = (side.teamID == home.teamID ? away.score : home.score) ?? 0
+        return mine > theirs
+    }
 }
 
 // MARK: - Timeline entry
