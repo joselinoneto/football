@@ -108,3 +108,17 @@ public struct Match: Identifiable, Hashable, Sendable {
         return nil
     }
 }
+
+public extension Collection where Element == Match {
+    /// Whether this cached schedule already reflects the completed tournament:
+    /// the Final has been played and no match is still scheduled or live. Data
+    /// in this state can never change again, so automatic network refreshes
+    /// (polling, widget timelines, background refresh) are wasted requests and
+    /// should be skipped. Requiring the finished Final — not just "all matches
+    /// finished" — keeps a partial cache (e.g. mid-tournament) from
+    /// short-circuiting the refreshes.
+    var isTournamentComplete: Bool {
+        contains { $0.stage == .final && $0.status == .finished }
+            && allSatisfy { $0.status == .finished }
+    }
+}
