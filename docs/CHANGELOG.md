@@ -4,6 +4,34 @@ All notable user-facing changes to **Just Football**. Newest first.
 
 ---
 
+## 1.5
+
+The trophy is lifted — the champions take over the Home screen, and the app goes
+quiet now that every result is final.
+
+### ✨ What's new
+
+- **Champions board on Home.** The champions now crown the top of the Home
+  schedule — tap the board to open the golden Champions screen with the final
+  result, the goal highlights, and a link to the winning squad.
+
+### 🧪 What to test (beta)
+
+- Open **Home** and confirm the **Champions** board sits above the day-by-day
+  schedule (on every filter), and that tapping it opens the Champions screen.
+- Pull down on Home and confirm the schedule still refreshes on demand.
+- Verify everything in both English and Brazilian Portuguese, light and dark.
+
+### 🔧 Under the hood
+
+- With the tournament complete, the app detects from its own cached data that
+  results can no longer change and stops all automatic network requests — the
+  schedule polling loop, background refresh, and widget updates now serve the
+  cached data. Pull-to-refresh still fetches, as an escape hatch for late
+  corrections.
+
+---
+
 ## 1.4
 
 The tournament reaches its finish — a champion to crown, and every team's road to it.

@@ -1,6 +1,6 @@
 # App Store Connect — submission content
 
-Paste-ready content for App Store Connect, current as of **version 1.3**. Two
+Paste-ready content for App Store Connect, current as of **version 1.5**. Two
 localizations: **English (U.S.)** is the primary language, **Portuguese (Brazil)**
 the second. Character limits are noted per field; all texts below fit. The
 "What's New" field is per-version; older entries are kept for reference.
@@ -55,7 +55,7 @@ The 2026 tournament, nothing else
 **Promotional text** (170 max):
 
 ```
-Every match of the 2026 tournament, live and offline. No ads, no accounts, no tracking. Just football.
+Every match of the 2026 tournament, and the champions crowned. Final results, offline. No ads, no accounts, no tracking. Just football.
 ```
 
 **Description** (4000 max):
@@ -98,13 +98,19 @@ football,soccer,2026,matches,scores,fixtures,results,schedule,groups,teams
 > Keywords are never shown to users. Note: "world cup" was removed — it is a
 > FIFA mark and contributed to the 5.2.1 rejection. Do not add it back.
 
+**What's New** (version 1.5):
+
+```
+The trophy has been lifted. The champions now crown the top of the Home schedule — tap the board for the final result, the goals that decided it, and the winning squad. And with the tournament complete, the app goes quiet: every result is final and stored on your device, so it no longer checks for updates or refreshes in the background — kinder to your battery and your data. Pull down to refresh any time. Still no ads, no accounts, no tracking. Just football.
+```
+
+> Earlier "What's New" texts are kept below for reference.
+
 **What's New** (version 1.3):
 
 ```
 The knockout stage is here. Follow the full bracket — from the round of 32 to the final — with extra-time and penalty-shootout results. Pick a favorite team and the app takes on its flag's color. New tabs for the schedule, the bracket, and the group tables. Still no ads, no accounts, no tracking. Just football.
 ```
-
-> Earlier "What's New" texts are kept below for reference.
 
 **What's New** (version 1.0):
 
@@ -131,7 +137,7 @@ O torneio de 2026 e nada mais
 **Promotional text** (170 max):
 
 ```
-Todas as partidas do torneio de 2026, ao vivo e offline. Sem anúncios, sem cadastro, sem rastreamento. Só futebol.
+Todas as partidas do torneio de 2026, com os campeões coroados. Resultados definitivos, offline. Sem anúncios, sem cadastro, sem rastreamento. Só futebol.
 ```
 
 **Description** (4000 max):
@@ -171,13 +177,19 @@ A ideia aqui é futebol e nada mais. Sem anúncios. Sem autenticação. Sem rast
 futebol,2026,partidas,placar,resultados,tabela,jogos,seleções,grupos
 ```
 
+**What's New** (version 1.5):
+
+```
+A taça foi erguida. Os campeões agora coroam o topo da tabela na tela inicial — toque no quadro para ver o resultado da final, os gols que decidiram o título e o elenco campeão. E com o torneio encerrado, o app fica em silêncio: todos os resultados são definitivos e ficam guardados no seu aparelho, então ele deixa de buscar atualizações e de se atualizar em segundo plano — melhor para a sua bateria e os seus dados. Puxe para atualizar quando quiser. Continua sem anúncios, sem cadastro, sem rastreamento. Só futebol.
+```
+
+> Os textos de "Novidades" anteriores ficam abaixo para referência.
+
 **What's New** (version 1.3):
 
 ```
 Chegou o mata-mata. Acompanhe o chaveamento completo — das oitavas à final — com resultados de prorrogação e disputa de pênaltis. Escolha um time do coração e o app adota a cor da bandeira dele. Novas abas para a tabela, o mata-mata e os grupos. Continua sem anúncios, sem cadastro, sem rastreamento. Só futebol.
 ```
-
-> Os textos de "Novidades" anteriores ficam abaixo para referência.
 
 **What's New** (version 1.0):
 
@@ -192,13 +204,13 @@ O apito inicial: todos os times, todos os grupos, todas as partidas do torneio d
 **Notes for the reviewer:**
 
 ```
-Just Football displays the public schedule and results of the international football tournament held in June–July 2026.
+Just Football displays the public schedule and final results of the international football tournament held in June–July 2026.
 
 - This app uses no FIFA or World Cup branding, logos, official emblems, or marks. It refers to the event only by date ("the 2026 tournament") and is not affiliated with, endorsed by, or sponsored by FIFA. The previous 5.2.1 rejection has been addressed: every instance of "FIFA" and "World Cup" / "Copa do Mundo" has been removed from the app and its metadata.
 - The displayed data is factual public information — team names, national flags, fixture dates, venues, and scores — none of which is FIFA intellectual property.
 - There is no login, account, or demo credentials — the full app is available immediately on first launch.
 - Content is read-only public data fetched over HTTPS from our hosted database and cached on the device for offline use.
-- Scores and match statuses update as the tournament progresses (June–July 2026), so the data visible during review reflects the real state on that day.
+- The tournament has ended, so all displayed results are final and complete — including the champions board on the Home screen, which is this version's main addition. Because the data can no longer change, the app now stops its automatic background and network refreshes once the final results are cached; a manual pull-to-refresh remains available.
 - The app collects no user data of any kind: no analytics, no tracking, no third-party SDKs.
 ```
 
