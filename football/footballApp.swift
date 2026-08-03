@@ -38,15 +38,21 @@ struct footballApp: App {
         }
         // Schedule a background refresh whenever we leave the foreground, so the
         // store, widget, and Live Activity keep updating while the app is closed.
+        // Once the tournament is complete the data is frozen — stop asking iOS
+        // for refresh slots.
         .onChange(of: scenePhase) { _, phase in
-            if phase == .background { Self.scheduleAppRefresh() }
+            if phase == .background && !viewModel.isTournamentComplete {
+                Self.scheduleAppRefresh()
+            }
         }
         // Runs when iOS grants a background slot: pull scores, then reschedule.
         // `refreshScores()` reloads from the store, which fires `onStoreReloaded`
         // → widget reload + Live Activity update.
         .backgroundTask(.appRefresh(Self.refreshTaskID)) {
             await viewModel.refreshScores()
-            Self.scheduleAppRefresh()
+            if !(await viewModel.isTournamentComplete) {
+                Self.scheduleAppRefresh()
+            }
         }
     }
 

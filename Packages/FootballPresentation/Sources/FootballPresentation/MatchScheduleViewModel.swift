@@ -84,14 +84,26 @@ public final class MatchScheduleViewModel {
     /// (i.e. the screen goes away), so there is no manual lifecycle to manage.
     public func start() async {
         await loadFromStore()
+        // Once the cached data shows the tournament finished it can never
+        // change again — skip the network entirely. Pull-to-refresh remains
+        // as the manual escape hatch for late data corrections.
+        guard !isTournamentComplete else { return }
         // One full refresh on appear pulls the static reference tables (Teams,
         // Squads, Standings …); the loop then polls only the live-changing
         // tables, keeping the per-poll request count low.
         await refresh()
-        while !Task.isCancelled {
+        while !Task.isCancelled && !isTournamentComplete {
             try? await Task.sleep(for: .seconds(pollInterval))
             await refreshLive()
         }
+    }
+
+    /// True once the cached data reflects the completed tournament (Final
+    /// played, every match finished). From that point the remote data is
+    /// frozen, so the polling loop, widget refreshes, and background refresh
+    /// all stop issuing requests.
+    public var isTournamentComplete: Bool {
+        matchesByID.values.isTournamentComplete
     }
 
     /// Seconds between polls: tight while anything is live so scores, the match
@@ -222,6 +234,11 @@ public final class MatchScheduleViewModel {
     /// `standingsGroups` is already populated from the initial load).
     public func refreshStandings() async {
         guard !standingsRefreshed else { return }
+        // The cached standings are already final once the tournament is over.
+        if isTournamentComplete && !standingsGroups.isEmpty {
+            standingsRefreshed = true
+            return
+        }
         try? await service.refreshStandings()
         if let standings = try? await service.standings() {
             standingsGroups = Self.standingsGroups(standings, teamsByID: teamsByID)
@@ -234,6 +251,10 @@ public final class MatchScheduleViewModel {
     /// `onStoreReloaded` → widget reload + Live Activity update. Best-effort:
     /// failures keep whatever is cached.
     public func refreshScores() async {
+        // A background launch starts with an empty view model — read the store
+        // first so a finished tournament is recognized before spending requests.
+        if matchesByID.isEmpty { await loadFromStore() }
+        guard !isTournamentComplete else { return }
         try? await service.refreshScores()
         await loadFromStore()
     }

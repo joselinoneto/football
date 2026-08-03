@@ -116,6 +116,10 @@ struct MatchEntry: TimelineEntry {
     /// True when configured to follow one team — the medium/large widgets then
     /// show that team's recent results plus its upcoming games, not a day's list.
     let followsTeam: Bool
+    /// True once the cached schedule shows the finished tournament — the data
+    /// is frozen, so the timeline reload cadence drops to a daily housekeeping
+    /// tick with no network behind it.
+    var tournamentComplete = false
 
     /// The primary day's matches, for the medium widget.
     var matches: [WidgetMatch] { days.first?.matches ?? [] }
@@ -137,7 +141,11 @@ struct WidgetMatchProvider: AppIntentTimelineProvider {
         let entry = await Self.makeEntry(for: configuration, refresh: true)
         // Tight cadence while a match is live so scores tick over; relaxed
         // otherwise. iOS coalesces and budgets these, so this is a hint.
-        let interval: TimeInterval = entry.hasLive ? 60 : 30 * 60
+        // A finished tournament needs only a daily tick (no network) so
+        // date-relative labels stay right.
+        let interval: TimeInterval = entry.tournamentComplete
+            ? 24 * 60 * 60
+            : (entry.hasLive ? 60 : 30 * 60)
         let next = Date().addingTimeInterval(interval)
         return Timeline(entries: [entry], policy: .after(next))
     }
@@ -155,7 +163,10 @@ extension WidgetMatchProvider {
         // a cold store — do the fuller Teams + Matches pull to pick up schedule
         // changes and final scores.
         var matches = (try? await service.matches()) ?? []
-        if refresh {
+        // Once the cached schedule shows the finished tournament (Final played,
+        // nothing left to play) the remote data is frozen — build the entry
+        // from the cache and never hit the network again.
+        if refresh && !matches.isTournamentComplete {
             if matches.contains(where: { $0.status == .live }) {
                 try? await service.refreshLiveScores()
             } else {
@@ -164,6 +175,7 @@ extension WidgetMatchProvider {
             matches = (try? await service.matches()) ?? []
         }
 
+        let tournamentComplete = matches.isTournamentComplete
         let teams = (try? await service.teams()) ?? []
         let teamsByID = Dictionary(teams.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         let all = matches.map { WidgetMatch(match: $0, teamsByID: teamsByID) }
@@ -185,7 +197,8 @@ extension WidgetMatchProvider {
             )
             return MatchEntry(date: now, title: title, days: [day],
                               hasLive: timeline.contains { $0.status == .live },
-                              primaryMatch: pick, primaryTitle: title, followsTeam: true)
+                              primaryMatch: pick, primaryTitle: title, followsTeam: true,
+                              tournamentComplete: tournamentComplete)
         }
 
         // Default: today's games first, then upcoming days (so the large widget
@@ -202,7 +215,8 @@ extension WidgetMatchProvider {
             hasLive: days.first?.hasLive ?? false,
             primaryMatch: primary,
             primaryTitle: primaryTitle,
-            followsTeam: false
+            followsTeam: false,
+            tournamentComplete: tournamentComplete
         )
     }
 

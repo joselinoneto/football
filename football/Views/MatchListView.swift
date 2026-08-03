@@ -85,6 +85,18 @@ struct MatchListView: View {
 
     private var matchListContent: some View {
         List {
+            // Once the Final is played, crown the champions at the top of the
+            // schedule with a tappable board into the dedicated Champion screen.
+            if let champion = viewModel.champion {
+                Section {
+                    NavigationLink {
+                        ChampionView(viewModel: viewModel, champion: champion)
+                    } label: {
+                        ChampionBanner(champion: champion)
+                    }
+                    .listRowBackground(Color(uiColor: .secondarySystemGroupedBackground))
+                }
+            }
             ForEach(viewModel.filteredDays) { day in
                 Section {
                     ForEach(day.rows) { row in
