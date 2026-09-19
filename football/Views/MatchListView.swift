@@ -8,6 +8,12 @@ import FootballPresentation
 /// Matches and Settings tabs.
 struct MatchListView: View {
     let viewModel: MatchScheduleViewModel
+    /// When set, the list is the primary pane of a split (iPhone Duo open):
+    /// tapping a row selects it for the detail pane instead of pushing.
+    var selection: Binding<String?>? = nil
+    /// The match most recently opened by a push, so the host can carry it into
+    /// the split pane when the device unfolds.
+    var lastOpened: Binding<String?>? = nil
 
     var body: some View {
         content
@@ -100,12 +106,8 @@ struct MatchListView: View {
             ForEach(viewModel.filteredDays) { day in
                 Section {
                     ForEach(day.rows) { row in
-                        NavigationLink {
-                            MatchDetailView(viewModel: viewModel, matchID: row.id)
-                        } label: {
-                            MatchRowView(row: row)
-                        }
-                        .listRowBackground(rowBackground(for: row))
+                        matchRow(row)
+                            .listRowBackground(rowBackground(for: row))
                     }
                 } header: {
                     DayHeader(day: day)
@@ -117,10 +119,39 @@ struct MatchListView: View {
         .refreshable {
             await viewModel.refresh()
         }
+        // Pushed match detail (rows in push mode carry the match ID as value).
+        .navigationDestination(for: String.self) { matchID in
+            MatchDetailView(viewModel: viewModel, matchID: matchID)
+                .onAppear { lastOpened?.wrappedValue = matchID }
+        }
+    }
+
+    @ViewBuilder
+    private func matchRow(_ row: MatchRowModel) -> some View {
+        if let selection {
+            Button {
+                withAnimation(.snappy) { selection.wrappedValue = row.id }
+            } label: {
+                HStack(spacing: Design.Spacing.medium) {
+                    MatchRowView(row: row)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .buttonStyle(.plain)
+        } else {
+            NavigationLink(value: row.id) {
+                MatchRowView(row: row)
+            }
+        }
     }
 
     private func rowBackground(for row: MatchRowModel) -> some View {
-        (row.status == .live ? Color.live.opacity(Design.Opacity.liveRowTint) : Color(uiColor: .secondarySystemGroupedBackground))
+        if selection?.wrappedValue == row.id {
+            return Color.pitch.opacity(Design.Opacity.selectedRowTint)
+        }
+        return row.status == .live ? Color.live.opacity(Design.Opacity.liveRowTint) : Color(uiColor: .secondarySystemGroupedBackground)
     }
 }
 

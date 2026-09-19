@@ -68,6 +68,8 @@ public enum Design {
     /// Tint strengths. Kept low so color reads as a hint, never a block of paint.
     public enum Opacity {
         public static let liveRowTint: Double = 0.10
+        /// The schedule row currently shown in the split detail pane.
+        public static let selectedRowTint: Double = 0.18
         public static let chipBorder: Double = 0.06
         public static let iconHalo: Double = 0.12
         public static let canvasWash: Double = 0.12
