@@ -29,11 +29,7 @@ struct RootTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             Tab("Home", systemImage: "house", value: AppTab.home) {
-                NavigationStack {
-                    MatchListView(viewModel: viewModel)
-                        .background(AppBackground())
-                        .navigationTitle("Football 2026")
-                }
+                HomeScreen(viewModel: viewModel)
             }
             Tab("Matches", systemImage: "soccerball", value: AppTab.matches) {
                 NavigationStack {

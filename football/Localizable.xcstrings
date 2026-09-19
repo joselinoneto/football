@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "–" : {
       "localizations" : {
         "pt-BR" : {
@@ -47,6 +50,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ %2$@%3$@. %4$@."
+          }
+        }
+      }
+    },
+    "%@ vs %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ x %2$@"
           }
         }
       }
@@ -234,6 +247,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Campeões"
+          }
+        }
+      }
+    },
+    "Choose a match from the schedule to see its scoreboard, timeline and stats." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha uma partida na tabela para ver o placar, a linha do tempo e as estatísticas."
           }
         }
       }
@@ -649,6 +672,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "J"
+          }
+        }
+      }
+    },
+    "Pick a Match" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha uma partida"
           }
         }
       }
